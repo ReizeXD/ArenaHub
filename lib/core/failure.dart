@@ -32,6 +32,10 @@ final class EmailAlreadyInUseFailure extends Failure {
   const EmailAlreadyInUseFailure() : super('Este e-mail já está cadastrado.');
 }
 
+final class NetworkFailure extends Failure {
+  const NetworkFailure([super.message = 'Falha de comunicação. Verifique sua conexão.']);
+}
+
 final class StorageFailure extends Failure {
   const StorageFailure([super.message = 'Falha ao acessar os dados locais.']);
 }

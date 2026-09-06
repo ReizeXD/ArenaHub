@@ -1,17 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'di/auth_mode.dart';
 import 'di/injector.dart';
 import 'features/auth/presentation/controllers/auth_controller.dart';
 import 'features/auth/presentation/pages/login_page.dart';
 import 'features/auth/presentation/states/auth_state.dart';
 import 'features/home/presentation/pages/home_page.dart';
 
+/// Origem da autenticação deste build.
+///
+/// Trocar esta constante troca o backend inteiro de autenticação — é o
+/// resultado prático de todo o resto do app depender só de abstrações.
+/// `AuthMode.firebase` exige ter rodado `flutterfire configure`.
+const AuthMode kAuthMode = AuthMode.local;
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Dependências montadas uma única vez, antes do primeiro frame.
-  final injector = await Injector.bootstrap();
+  final injector = await Injector.bootstrap(mode: kAuthMode);
 
   runApp(ArenaHubApp(authController: injector.authController));
 }

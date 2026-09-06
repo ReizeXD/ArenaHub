@@ -1,0 +1,22 @@
+rules_version = '2';
+
+// Regras da coleção de perfis (nome e papel do usuário).
+//
+// O modo "produção" do Firestore nega tudo por padrão, então sem estas
+// regras o app conecta mas não consegue ler nem gravar o perfil.
+//
+// Cole este conteúdo no console: Firestore Database > aba Regras > Publicar.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Cada pessoa lê e escreve apenas o próprio documento, e só autenticada.
+    match /users/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // Qualquer outro caminho continua bloqueado.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
