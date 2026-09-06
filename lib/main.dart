@@ -1,35 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'features/login/data/repositories/mock_login_repository_impl.dart';
-import 'features/login/domain/repositories/login_repository.dart';
-import 'features/login/domain/usecases/login_usecase.dart';
-import 'features/login/presentation/controllers/login_controller.dart';
-import 'features/login/presentation/pages/login_page.dart';
+import 'di/injector.dart';
+import 'features/auth/presentation/controllers/auth_controller.dart';
+import 'features/auth/presentation/pages/login_page.dart';
+import 'features/auth/presentation/states/auth_state.dart';
+import 'features/home/presentation/pages/home_page.dart';
 
-void main() {
-  runApp(const ArenaHubApp());
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Dependências montadas uma única vez, antes do primeiro frame.
+  final injector = await Injector.bootstrap();
+
+  runApp(ArenaHubApp(authController: injector.authController));
 }
 
 class ArenaHubApp extends StatelessWidget {
-  const ArenaHubApp({super.key});
+  const ArenaHubApp({super.key, required this.authController});
+
+  final AuthController authController;
 
   @override
   Widget build(BuildContext context) {
-    // Injeção de dependências:
-    // 1. Instanciamos a implementação do repositório (Mock)
-    final ILoginRepository loginRepository = MockLoginRepositoryImpl();
-
-    // 2. Injetamos o repositório no Caso de Uso (DIP)
-    final loginUseCase = LoginUseCase(loginRepository);
-
-    return MultiProvider(
-      providers: [
-        // 3. Fornecemos o LoginController para a árvore de widgets via Provider
-        ChangeNotifierProvider(
-          create: (_) => LoginController(loginUseCase),
-        ),
-      ],
+    return ChangeNotifierProvider<AuthController>.value(
+      value: authController,
       child: MaterialApp(
         title: 'ArenaHub',
         debugShowCheckedModeBanner: false,
@@ -42,8 +37,30 @@ class ArenaHubApp extends StatelessWidget {
           scaffoldBackgroundColor: Colors.white,
           fontFamily: 'Roboto',
         ),
-        home: const LoginPage(),
+        home: const AuthGate(),
       ),
     );
+  }
+}
+
+/// Decide qual tela mostrar a partir do estado da autenticação.
+///
+/// Centralizar a navegação aqui evita que cada tela conheça a próxima: a
+/// `LoginPage` não importa a `HomePage`, e vice-versa.
+class AuthGate extends StatelessWidget {
+  const AuthGate({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final state = context.watch<AuthController>().state;
+
+    return switch (state) {
+      AuthChecking() => const Scaffold(
+          backgroundColor: Colors.white,
+          body: Center(child: CircularProgressIndicator()),
+        ),
+      Authenticated(:final session) => HomePage(session: session),
+      Unauthenticated() || AuthInProgress() || AuthFailed() => const LoginPage(),
+    };
   }
 }
