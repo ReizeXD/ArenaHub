@@ -46,3 +46,15 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
+
+# Firebase
+# Credenciais de servidor (Admin SDK). Estas SÃO segredo — nunca versionar.
+*-firebase-adminsdk-*.json
+serviceAccount*.json
+.firebase/
+firebase-debug.log
+
+# Nota: lib/firebase_options.dart e android/app/google-services.json ficam
+# versionados de propósito. Chave de API do Firebase identifica o projeto,
+# não autentica ninguém — a segurança vem do Authentication e das regras do
+# Firestore (ver firestore.rules).
