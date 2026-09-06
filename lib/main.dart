@@ -13,7 +13,7 @@ import 'features/home/presentation/pages/home_page.dart';
 /// Trocar esta constante troca o backend inteiro de autenticação — é o
 /// resultado prático de todo o resto do app depender só de abstrações.
 /// `AuthMode.firebase` exige ter rodado `flutterfire configure`.
-const AuthMode kAuthMode = AuthMode.local;
+const AuthMode kAuthMode = AuthMode.firebase;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

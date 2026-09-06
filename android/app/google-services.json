@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "810684299054",
+    "project_id": "arenahub-ee4b0",
+    "storage_bucket": "arenahub-ee4b0.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:810684299054:android:ed51ce7420f759c401acbf",
+        "android_client_info": {
+          "package_name": "com.computacao.arenahub"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "810684299054-u94053lpbrbop9svd2ti7hfr5lthu8uv.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC8HEazBiWSHzI23_NgobsIrX_SJ0AEsSI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "810684299054-u94053lpbrbop9svd2ti7hfr5lthu8uv.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
