@@ -21,10 +21,22 @@ import '../datasources/user_profile_data_source.dart';
 /// senha, no servidor dele); o [UserProfileDataSource] cuida de nome e papel,
 /// que o Auth não armazena.
 class FirebaseAuthRepository implements AuthRepository {
-  const FirebaseAuthRepository(this._auth, this._profiles);
+  const FirebaseAuthRepository(
+    this._auth,
+    this._profiles, {
+    this.sessionDuration = const Duration(days: 7),
+  });
 
   final fb.FirebaseAuth _auth;
   final UserProfileDataSource _profiles;
+
+  /// Por quanto tempo a sessão salva no aparelho continua valendo.
+  ///
+  /// Deliberadamente **não** é a validade do ID token (1 hora): o token é
+  /// renovado sozinho pelo SDK do Firebase, então expirar a sessão junto com
+  /// ele deslogaria a pessoa de hora em hora sem necessidade. Mesmo prazo do
+  /// adaptador local, para que os dois se comportem igual.
+  final Duration sessionDuration;
 
   @override
   Future<Result<AuthSession>> signIn({
@@ -77,6 +89,7 @@ class FirebaseAuthRepository implements AuthRepository {
   }) async {
     final resolved = profile ?? await profileOrNull(_profiles, firebaseUser.uid);
     final token = await firebaseUser.getIdTokenResult();
+    final issuedAt = token.issuedAtTime ?? DateTime.now();
 
     return AuthSession(
       user: User(
@@ -88,10 +101,12 @@ class FirebaseAuthRepository implements AuthRepository {
         // Sem perfil gravado, o menor privilégio: jogador.
         role: resolved?.role ?? Role.player,
       ),
+      // Instantâneo do token no momento do login. Para uma chamada
+      // autenticada a uma API, peça um novo com `getIdToken()` em vez de
+      // reaproveitar este.
       token: token.token ?? '',
-      issuedAt: token.issuedAtTime ?? DateTime.now(),
-      expiresAt:
-          token.expirationTime ?? DateTime.now().add(const Duration(hours: 1)),
+      issuedAt: issuedAt,
+      expiresAt: issuedAt.add(sessionDuration),
     );
   }
 
