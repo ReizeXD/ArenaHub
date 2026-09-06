@@ -1,5 +1,7 @@
 import 'package:arenahub/core/failure.dart';
+import 'package:arenahub/features/auth/data/datasources/user_profile_data_source.dart';
 import 'package:arenahub/features/auth/data/repositories/firebase_auth_repository.dart';
+import 'package:arenahub/features/auth/domain/entities/role.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Só a tradução de erro é testada aqui: o resto do adaptador conversa com o
@@ -50,4 +52,64 @@ void main() {
       isA<StorageFailure>(),
     );
   });
+
+  group('perfil é opcional', () {
+    test('sem Firestore, o login não quebra — fica sem perfil', () async {
+      final profile = await FirebaseAuthRepository.profileOrNull(
+        BrokenProfileSource(),
+        'uid-1',
+      );
+
+      // Quem chama trata null como "papel de jogador", o menor privilégio.
+      expect(profile, isNull);
+    });
+
+    test('sem Firestore, o cadastro avisa que não gravou em vez de estourar',
+        () async {
+      final saved = await FirebaseAuthRepository.saveProfileQuietly(
+        BrokenProfileSource(),
+        'uid-1',
+        const UserProfile(fullName: 'Ana Ribeiro', role: Role.owner),
+      );
+
+      expect(saved, isFalse);
+    });
+
+    test('com Firestore, o papel sobrevive à ida e volta', () async {
+      final source = FakeProfileSource();
+
+      await FirebaseAuthRepository.saveProfileQuietly(
+        source,
+        'uid-1',
+        const UserProfile(fullName: 'Ana Ribeiro', role: Role.owner),
+      );
+      final profile =
+          await FirebaseAuthRepository.profileOrNull(source, 'uid-1');
+
+      expect(profile?.role, Role.owner);
+      expect(profile?.fullName, 'Ana Ribeiro');
+    });
+  });
+}
+
+/// Perfil que sempre falha — simula projeto sem Firestore criado, ou regra
+/// negando a leitura.
+class BrokenProfileSource implements UserProfileDataSource {
+  @override
+  Future<UserProfile?> find(String uid) async => throw StateError('sem Firestore');
+
+  @override
+  Future<void> save(String uid, UserProfile profile) async =>
+      throw StateError('sem Firestore');
+}
+
+/// Perfil em memória, para o caminho feliz.
+class FakeProfileSource implements UserProfileDataSource {
+  final Map<String, UserProfile> saved = {};
+
+  @override
+  Future<UserProfile?> find(String uid) async => saved[uid];
+
+  @override
+  Future<void> save(String uid, UserProfile profile) async => saved[uid] = profile;
 }

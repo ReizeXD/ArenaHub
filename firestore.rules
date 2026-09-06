@@ -6,6 +6,10 @@ rules_version = '2';
 // regras o app conecta mas não consegue ler nem gravar o perfil.
 //
 // Cole este conteúdo no console: Firestore Database > aba Regras > Publicar.
+//
+// OPCIONAL por enquanto: sem Firestore o login funciona igual, só que todo
+// mundo entra como jogador. Crie o banco quando os papéis passarem a
+// importar (dono de arena x jogador).
 service cloud.firestore {
   match /databases/{database}/documents {
 

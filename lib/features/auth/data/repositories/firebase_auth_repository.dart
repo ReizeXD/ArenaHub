@@ -51,7 +51,10 @@ class FirebaseAuthRepository implements AuthRepository {
       );
       final firebaseUser = credential.user!;
 
-      await _profiles.save(
+      // A conta já existe no Auth neste ponto. Falhar aqui deixaria um
+      // usuário órfão, sem conseguir entrar — então grava sem derrubar.
+      await saveProfileQuietly(
+        _profiles,
         firebaseUser.uid,
         UserProfile(fullName: data.fullName, role: data.role),
       );
@@ -72,7 +75,7 @@ class FirebaseAuthRepository implements AuthRepository {
     fb.User firebaseUser, {
     UserProfile? profile,
   }) async {
-    final resolved = profile ?? await _profiles.find(firebaseUser.uid);
+    final resolved = profile ?? await profileOrNull(_profiles, firebaseUser.uid);
     final token = await firebaseUser.getIdTokenResult();
 
     return AuthSession(
@@ -90,6 +93,40 @@ class FirebaseAuthRepository implements AuthRepository {
       expiresAt:
           token.expirationTime ?? DateTime.now().add(const Duration(hours: 1)),
     );
+  }
+
+  /// Busca o perfil tolerando falha.
+  ///
+  /// O perfil é **complementar**: o Firebase Auth já autenticou a pessoa
+  /// antes desta chamada. Se o Firestore não existir no projeto, estiver fora
+  /// do ar ou negar a leitura, não faz sentido recusar um login que já deu
+  /// certo — degrada para "sem perfil", e o papel cai no menor privilégio.
+  ///
+  /// Por isso o Firestore é opcional: sem ele o login funciona, só que todo
+  /// mundo entra como jogador.
+  static Future<UserProfile?> profileOrNull(
+    UserProfileDataSource profiles,
+    String uid,
+  ) async {
+    try {
+      return await profiles.find(uid);
+    } on Object {
+      return null;
+    }
+  }
+
+  /// Grava o perfil tolerando falha, pelo mesmo motivo de [profileOrNull].
+  static Future<bool> saveProfileQuietly(
+    UserProfileDataSource profiles,
+    String uid,
+    UserProfile profile,
+  ) async {
+    try {
+      await profiles.save(uid, profile);
+      return true;
+    } on Object {
+      return false;
+    }
   }
 
   /// Traduz o código de erro do Firebase para o vocabulário de falhas do
