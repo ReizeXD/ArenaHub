@@ -10,8 +10,8 @@ entre eles:
 
 | Modo | Onde ficam os usuários | Precisa de internet? | Precisa de configuração? |
 | --- | --- | --- | --- |
+| `AuthMode.firebase` (padrão) | Firebase Authentication | sim | já vem configurado |
 | `AuthMode.local` | SQLite no aparelho (memória na web), senha em PBKDF2 | não | não |
-| `AuthMode.firebase` | Firebase Authentication | sim | já vem configurado |
 
 A escolha está no topo de `lib/main.dart`:
 
@@ -51,20 +51,6 @@ vivo segurando alguns GB. Encerrar é seguro:
 ```bash
 cd android && ./gradlew --stop
 ```
-
-## Modo local (`AuthMode.local`)
-
-Zero configuração: troque a constante, rode, pronto. Funciona offline.
-
-As contas abaixo são criadas na primeira execução, com a senha gravada em
-hash como qualquer outra. A tela de cadastro ainda não existe (ver *O que
-falta*).
-
-| E-mail | Senha | Papel |
-| --- | --- | --- |
-| `admin@arenahub.com` | `arena2026` | Administrador do sistema |
-| `dono@arenahub.com` | `arena2026` | Dono de arena |
-| `jogador@arenahub.com` | `arena2026` | Jogador |
 
 ## Modo Firebase (`AuthMode.firebase`, padrão)
 
@@ -117,6 +103,23 @@ nome vem do trecho antes do `@`. Para ativar os papéis:
    → *Publicar*. Sem esse passo o app conecta mas não lê nada.
 
 Nenhuma linha de código muda: os papéis passam a funcionar sozinhos.
+
+## Modo local (`AuthMode.local`) — alternativa offline
+
+Segunda implementação do mesmo `AuthRepository`, sem nenhuma dependência de
+rede. Serve para desenvolver sem internet e como plano B se a conexão
+falhar na hora de apresentar: troque a constante, aperte `R`, pronto — não
+recompila nada nativo.
+
+As contas abaixo são criadas na primeira execução, com a senha gravada em
+hash como qualquer outra. A tela de cadastro ainda não existe (ver *O que
+falta*).
+
+| E-mail | Senha | Papel |
+| --- | --- | --- |
+| `admin@arenahub.com` | `arena2026` | Administrador do sistema |
+| `dono@arenahub.com` | `arena2026` | Dono de arena |
+| `jogador@arenahub.com` | `arena2026` | Jogador |
 
 ## Estrutura
 
