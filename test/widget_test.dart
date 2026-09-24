@@ -1,11 +1,13 @@
 import 'package:arenahub/core/failure.dart';
 import 'package:arenahub/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:arenahub/features/auth/presentation/pages/login_page.dart';
+import 'package:arenahub/features/courts/presentation/pages/courts_page.dart';
 import 'package:arenahub/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 
+import 'support/court_fakes.dart';
 import 'support/fakes.dart';
 
 void main() {
@@ -68,7 +70,13 @@ void main() {
     final controller = controllerWith();
     await controller.restoreSession();
 
-    await tester.pumpWidget(ArenaHubApp(authController: controller));
+    await tester.pumpWidget(
+      ArenaHubApp(
+        authController: controller,
+        courtsController: courtsControllerWith(),
+        bookingController: bookingControllerWith(),
+      ),
+    );
     await tester.pumpAndSettle();
 
     expect(find.byType(LoginPage), findsOneWidget);
@@ -81,8 +89,11 @@ void main() {
     await tester.tap(find.widgetWithText(ElevatedButton, 'Entrar'));
     await tester.pumpAndSettle();
 
+    // Autenticado, o gate entrega a lista de quadras.
     expect(find.byType(LoginPage), findsNothing);
-    expect(find.text('Bem-vindo, Craque!'), findsOneWidget);
+    expect(find.byType(CourtsPage), findsOneWidget);
+    expect(find.text('Olá, Craque'), findsOneWidget);
+    expect(find.text('Arena Jatiúca'), findsOneWidget);
 
     await tester.tap(find.byTooltip('Sair'));
     await tester.pumpAndSettle();
