@@ -20,6 +20,15 @@ import '../features/auth/domain/usecases/sign_in.dart';
 import '../features/auth/domain/usecases/sign_out.dart';
 import '../features/auth/domain/usecases/sign_up.dart';
 import '../features/auth/presentation/controllers/auth_controller.dart';
+import '../features/courts/data/repositories/in_memory_booking_repository.dart';
+import '../features/courts/data/repositories/in_memory_court_repository.dart';
+import '../features/courts/domain/repositories/booking_repository.dart';
+import '../features/courts/domain/repositories/court_repository.dart';
+import '../features/courts/domain/usecases/book_court.dart';
+import '../features/courts/domain/usecases/get_court_availability.dart';
+import '../features/courts/domain/usecases/list_courts.dart';
+import '../features/courts/presentation/controllers/booking_controller.dart';
+import '../features/courts/presentation/controllers/courts_controller.dart';
 import '../firebase_options.dart';
 import 'auth_mode.dart';
 
@@ -29,9 +38,15 @@ import 'auth_mode.dart';
 /// backend de autenticação em uma expressão. Nenhuma tela, caso de uso ou
 /// entidade sabe que essa escolha existe.
 class Injector {
-  const Injector._(this.authController);
+  const Injector._(
+    this.authController,
+    this.courtsController,
+    this.bookingController,
+  );
 
   final AuthController authController;
+  final CourtsController courtsController;
+  final BookingController bookingController;
 
   static Future<Injector> bootstrap({AuthMode mode = AuthMode.local}) async {
     final preferences = await SharedPreferences.getInstance();
@@ -47,7 +62,19 @@ class Injector {
     );
     await controller.restoreSession();
 
-    return Injector._(controller);
+    // Quadras e reservas ainda em memória. Trocar por adaptadores do
+    // Firestore é editar estas duas linhas e mais nenhuma.
+    const CourtRepository courts = InMemoryCourtRepository();
+    final BookingRepository bookings = InMemoryBookingRepository();
+
+    return Injector._(
+      controller,
+      CourtsController(const ListCourts(courts)),
+      BookingController(
+        GetCourtAvailability(bookings),
+        BookCourt(bookings),
+      ),
+    );
   }
 
   static Future<AuthRepository> _buildRepository(AuthMode mode) async =>

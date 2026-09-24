@@ -6,7 +6,9 @@ import 'di/injector.dart';
 import 'features/auth/presentation/controllers/auth_controller.dart';
 import 'features/auth/presentation/pages/login_page.dart';
 import 'features/auth/presentation/states/auth_state.dart';
-import 'features/home/presentation/pages/home_page.dart';
+import 'features/courts/presentation/controllers/booking_controller.dart';
+import 'features/courts/presentation/controllers/courts_controller.dart';
+import 'features/courts/presentation/pages/courts_page.dart';
 
 /// Origem da autenticação deste build.
 ///
@@ -21,18 +23,37 @@ Future<void> main() async {
   // Dependências montadas uma única vez, antes do primeiro frame.
   final injector = await Injector.bootstrap(mode: kAuthMode);
 
-  runApp(ArenaHubApp(authController: injector.authController));
+  runApp(
+    ArenaHubApp(
+      authController: injector.authController,
+      courtsController: injector.courtsController,
+      bookingController: injector.bookingController,
+    ),
+  );
 }
 
 class ArenaHubApp extends StatelessWidget {
-  const ArenaHubApp({super.key, required this.authController});
+  const ArenaHubApp({
+    super.key,
+    required this.authController,
+    required this.courtsController,
+    required this.bookingController,
+  });
 
   final AuthController authController;
+  final CourtsController courtsController;
+  final BookingController bookingController;
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider<AuthController>.value(
-      value: authController,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider<AuthController>.value(value: authController),
+        ChangeNotifierProvider<CourtsController>.value(value: courtsController),
+        ChangeNotifierProvider<BookingController>.value(
+          value: bookingController,
+        ),
+      ],
       child: MaterialApp(
         title: 'ArenaHub',
         debugShowCheckedModeBanner: false,
@@ -54,7 +75,7 @@ class ArenaHubApp extends StatelessWidget {
 /// Decide qual tela mostrar a partir do estado da autenticação.
 ///
 /// Centralizar a navegação aqui evita que cada tela conheça a próxima: a
-/// `LoginPage` não importa a `HomePage`, e vice-versa.
+/// `LoginPage` não importa a `CourtsPage`, e vice-versa.
 class AuthGate extends StatelessWidget {
   const AuthGate({super.key});
 
@@ -67,7 +88,7 @@ class AuthGate extends StatelessWidget {
           backgroundColor: Colors.white,
           body: Center(child: CircularProgressIndicator()),
         ),
-      Authenticated(:final session) => HomePage(session: session),
+      Authenticated(:final session) => CourtsPage(session: session),
       Unauthenticated() || AuthInProgress() || AuthFailed() => const LoginPage(),
     };
   }
