@@ -20,8 +20,12 @@ import '../features/auth/domain/usecases/sign_in.dart';
 import '../features/auth/domain/usecases/sign_out.dart';
 import '../features/auth/domain/usecases/sign_up.dart';
 import '../features/auth/presentation/controllers/auth_controller.dart';
+import '../features/courts/data/repositories/firestore_booking_repository.dart';
+import '../features/courts/data/repositories/firestore_court_repository.dart';
 import '../features/courts/data/repositories/in_memory_booking_repository.dart';
 import '../features/courts/data/repositories/in_memory_court_repository.dart';
+import '../features/courts/data/repositories/seeding_court_repository.dart';
+import '../features/courts/data/seed/firestore_court_seeder.dart';
 import '../features/courts/domain/repositories/booking_repository.dart';
 import '../features/courts/domain/repositories/court_repository.dart';
 import '../features/courts/domain/usecases/book_court.dart';
@@ -34,9 +38,9 @@ import 'auth_mode.dart';
 
 /// Composition root: o **único** ponto do app que menciona classes concretas.
 ///
-/// Repare no `switch` de [_buildRepository]: é o projeto inteiro trocando de
-/// backend de autenticação em uma expressão. Nenhuma tela, caso de uso ou
-/// entidade sabe que essa escolha existe.
+/// Os dois `switch` abaixo são o projeto inteiro trocando de infraestrutura.
+/// Nenhuma entidade, caso de uso, controller ou tela sabe que essa escolha
+/// existe — todos conhecem apenas as interfaces.
 class Injector {
   const Injector._(
     this.authController,
@@ -49,10 +53,16 @@ class Injector {
   final BookingController bookingController;
 
   static Future<Injector> bootstrap({AuthMode mode = AuthMode.local}) async {
+    if (mode == AuthMode.firebase) {
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+    }
+
     final preferences = await SharedPreferences.getInstance();
     final SessionStorage sessionStorage = PrefsSessionStorage(preferences);
 
-    final AuthRepository authRepository = await _buildRepository(mode);
+    final AuthRepository authRepository = await _buildAuthRepository(mode);
 
     final controller = AuthController(
       SignIn(authRepository, sessionStorage),
@@ -62,14 +72,12 @@ class Injector {
     );
     await controller.restoreSession();
 
-    // Quadras e reservas ainda em memória. Trocar por adaptadores do
-    // Firestore é editar estas duas linhas e mais nenhuma.
-    const CourtRepository courts = InMemoryCourtRepository();
-    final BookingRepository bookings = InMemoryBookingRepository();
+    final (CourtRepository courts, BookingRepository bookings) =
+        _buildCourtRepositories(mode);
 
     return Injector._(
       controller,
-      CourtsController(const ListCourts(courts)),
+      CourtsController(ListCourts(courts)),
       BookingController(
         GetCourtAvailability(bookings),
         BookCourt(bookings),
@@ -77,13 +85,18 @@ class Injector {
     );
   }
 
-  static Future<AuthRepository> _buildRepository(AuthMode mode) async =>
+  // --- autenticação ---------------------------------------------------
+
+  static Future<AuthRepository> _buildAuthRepository(AuthMode mode) async =>
       switch (mode) {
-        AuthMode.local => _buildLocalRepository(),
-        AuthMode.firebase => _buildFirebaseRepository(),
+        AuthMode.local => _buildLocalAuthRepository(),
+        AuthMode.firebase => FirebaseAuthRepository(
+            fb.FirebaseAuth.instance,
+            FirestoreUserProfileDataSource(FirebaseFirestore.instance),
+          ),
       };
 
-  static Future<AuthRepository> _buildLocalRepository() async {
+  static Future<AuthRepository> _buildLocalAuthRepository() async {
     final passwordHasher = Pbkdf2PasswordHasher();
     final UserDataSource userDataSource = await _openUserDataSource();
 
@@ -94,18 +107,34 @@ class Injector {
     return LocalAuthRepository(userDataSource, passwordHasher);
   }
 
-  static Future<AuthRepository> _buildFirebaseRepository() async {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
-
-    return FirebaseAuthRepository(
-      fb.FirebaseAuth.instance,
-      FirestoreUserProfileDataSource(FirebaseFirestore.instance),
-    );
-  }
-
   /// SQLite no aparelho; em memória na web, onde o plugin nativo não existe.
   static Future<UserDataSource> _openUserDataSource() async =>
       kIsWeb ? InMemoryUserDataSource() : await SqfliteUserDataSource.open();
+
+  // --- quadras e reservas ---------------------------------------------
+
+  static (CourtRepository, BookingRepository) _buildCourtRepositories(
+    AuthMode mode,
+  ) =>
+      switch (mode) {
+        AuthMode.local => (
+            const InMemoryCourtRepository(),
+            InMemoryBookingRepository(),
+          ),
+        AuthMode.firebase => _firestoreCourtRepositories(),
+      };
+
+  static (CourtRepository, BookingRepository) _firestoreCourtRepositories() {
+    final firestore = FirebaseFirestore.instance;
+
+    return (
+      // O decorador semeia o catálogo na primeira leitura, enquanto não
+      // existe cadastro de quadras pelo dono da arena.
+      SeedingCourtRepository(
+        FirestoreCourtRepository(firestore),
+        FirestoreCourtSeeder(firestore).seed,
+      ),
+      FirestoreBookingRepository(firestore),
+    );
+  }
 }
