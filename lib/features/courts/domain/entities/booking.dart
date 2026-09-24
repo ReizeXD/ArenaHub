@@ -16,6 +16,42 @@ class Booking {
 
   DateTime get end => start.add(duration);
 
+  /// Identidade derivada do que a reserva ocupa: quadra, dia e hora.
+  ///
+  /// Não é detalhe de banco — é a regra de que **um horário de uma quadra
+  /// comporta no máximo uma reserva**, dita na própria identidade. Quem
+  /// persiste ganha a unicidade de graça: gravar duas vezes o mesmo id é
+  /// gravar o mesmo documento, e a implementação recusa a segunda.
+  ///
+  /// `pajucara__2026-09-28__19`
+  static String slotId({required String courtId, required DateTime start}) {
+    final month = start.month.toString().padLeft(2, '0');
+    final day = start.day.toString().padLeft(2, '0');
+    final hour = start.hour.toString().padLeft(2, '0');
+    return '${courtId}__${start.year}-$month-$day'
+        '__$hour';
+  }
+
+  /// Chave de consulta da agenda: `pajucara|2026-09-28`.
+  ///
+  /// Um único campo com quadra e dia juntos permite buscar a agenda com um
+  /// filtro de igualdade só — sem índice composto.
+  static String courtDayKey({
+    required String courtId,
+    required DateTime day,
+  }) {
+    final month = day.month.toString().padLeft(2, '0');
+    final dayOfMonth = day.day.toString().padLeft(2, '0');
+    return '$courtId|${day.year}-$month-$dayOfMonth';
+  }
+
+  /// `2026-09-28` — o dia, sem a quadra.
+  static String dayKey(DateTime day) {
+    final month = day.month.toString().padLeft(2, '0');
+    final dayOfMonth = day.day.toString().padLeft(2, '0');
+    return '${day.year}-$month-$dayOfMonth';
+  }
+
   /// Duas reservas ocupam o mesmo horário quando começam na mesma hora do
   /// mesmo dia — a granularidade do sistema é de uma hora.
   bool startsAt(DateTime other) =>

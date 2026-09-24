@@ -10,16 +10,11 @@ import '../repositories/booking_repository.dart';
 /// ocupado são recusados aqui, com falha tipada. O repositório só é chamado
 /// quando a reserva é legítima.
 class BookCourt {
-  const BookCourt(
-    this._bookings, {
-    DateTime Function()? now,
-    String Function()? idGenerator,
-  })  : _now = now ?? DateTime.now,
-        _idGenerator = idGenerator ?? _defaultIdGenerator;
+  const BookCourt(this._bookings, {DateTime Function()? now})
+      : _now = now ?? DateTime.now;
 
   final BookingRepository _bookings;
   final DateTime Function() _now;
-  final String Function() _idGenerator;
 
   Future<Result<Booking>> call({
     required Court court,
@@ -43,16 +38,15 @@ class BookCourt {
       return const Err(SlotUnavailableFailure());
     }
 
+    // A checagem acima é para dar mensagem boa ao usuário. A garantia real
+    // está no id: o repositório recusa gravar um horário já ocupado.
     return _bookings.create(
       Booking(
-        id: _idGenerator(),
+        id: Booking.slotId(courtId: court.id, start: start),
         courtId: court.id,
         userId: userId,
         start: start,
       ),
     );
   }
-
-  static String _defaultIdGenerator() =>
-      DateTime.now().microsecondsSinceEpoch.toRadixString(36);
 }

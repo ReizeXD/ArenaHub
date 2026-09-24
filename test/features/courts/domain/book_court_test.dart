@@ -14,11 +14,7 @@ void main() {
 
   setUp(() {
     repository = FakeBookingRepository();
-    bookCourt = BookCourt(
-      repository,
-      now: () => agora,
-      idGenerator: () => 'reserva-1',
-    );
+    bookCourt = BookCourt(repository, now: () => agora);
   });
 
   Future<Result<Booking>> reservar(DateTime start) =>
@@ -30,6 +26,14 @@ void main() {
     expect(result, isA<Ok<Booking>>());
     expect((result as Ok<Booking>).value.userId, 'usuario-1');
     expect(repository.createCalls, 1);
+  });
+
+  test('o id da reserva é derivado da quadra e do horário', () async {
+    final result = await reservar(DateTime(2026, 9, 28, 11));
+
+    // É esse id que impede duas reservas no mesmo horário: quem grava a
+    // segunda está gravando o mesmo documento, e a gravação é recusada.
+    expect((result as Ok<Booking>).value.id, 'quadra-1__2026-09-28__11');
   });
 
   test('recusa horário que já passou', () async {
@@ -53,11 +57,11 @@ void main() {
   test('recusa horário que outra pessoa já reservou', () async {
     await reservar(DateTime(2026, 9, 29, 10));
 
-    final segunda = await BookCourt(
-      repository,
-      now: () => agora,
-      idGenerator: () => 'reserva-2',
-    )(court: testCourt, userId: 'usuario-2', start: DateTime(2026, 9, 29, 10));
+    final segunda = await BookCourt(repository, now: () => agora)(
+      court: testCourt,
+      userId: 'usuario-2',
+      start: DateTime(2026, 9, 29, 10),
+    );
 
     expect((segunda as Err<Booking>).failure, isA<SlotUnavailableFailure>());
     expect(repository.createCalls, 1, reason: 'a segunda não foi gravada');
@@ -68,7 +72,10 @@ void main() {
     // Por isso a checagem acontece no caso de uso, não só na interface.
     repository = FakeBookingRepository([
       Booking(
-        id: 'r-concorrente',
+        id: Booking.slotId(
+          courtId: testCourt.id,
+          start: DateTime(2026, 9, 29, 11),
+        ),
         courtId: testCourt.id,
         userId: 'outro',
         start: DateTime(2026, 9, 29, 11),

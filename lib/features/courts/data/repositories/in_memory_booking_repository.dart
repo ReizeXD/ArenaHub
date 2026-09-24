@@ -1,3 +1,4 @@
+import '../../../../core/failure.dart';
 import '../../../../core/result.dart';
 import '../../domain/entities/booking.dart';
 import '../../domain/repositories/booking_repository.dart';
@@ -35,6 +36,12 @@ class InMemoryBookingRepository implements BookingRepository {
 
   @override
   Future<Result<Booking>> create(Booking booking) async {
+    // Mesma garantia que o adaptador do Firestore dá pelo id do documento:
+    // dois pedidos para o mesmo horário, só o primeiro entra. Os dois se
+    // comportam igual, e é isso que sustenta a substituição de Liskov.
+    if (_bookings.any((existing) => existing.id == booking.id)) {
+      return const Err(SlotUnavailableFailure());
+    }
     _bookings.add(booking);
     return Ok(booking);
   }
