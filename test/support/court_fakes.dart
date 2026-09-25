@@ -10,7 +10,9 @@ import 'package:arenahub/features/courts/domain/usecases/book_court.dart';
 import 'package:arenahub/features/courts/domain/usecases/get_court_availability.dart';
 import 'package:arenahub/features/courts/domain/usecases/list_courts.dart';
 import 'package:arenahub/features/courts/presentation/controllers/booking_controller.dart';
+import 'package:arenahub/features/courts/domain/usecases/list_my_bookings.dart';
 import 'package:arenahub/features/courts/presentation/controllers/courts_controller.dart';
+import 'package:arenahub/features/courts/presentation/controllers/my_bookings_controller.dart';
 
 /// Quadra de teste: abre 8h, fecha 12h — quatro horários, fácil de conferir.
 const Court testCourt = Court(
@@ -93,3 +95,17 @@ BookingController bookingControllerWith({
     now: now,
   );
 }
+
+/// Monta um `MyBookingsController` sobre dublês.
+MyBookingsController myBookingsControllerWith({
+  BookingRepository? bookings,
+  CourtRepository? courts,
+  DateTime Function()? now,
+}) =>
+    MyBookingsController(
+      ListMyBookings(
+        bookings ?? FakeBookingRepository(),
+        courts ?? const InMemoryCourtRepository(),
+        now: now,
+      ),
+    );

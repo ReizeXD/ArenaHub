@@ -1,7 +1,7 @@
 import 'package:arenahub/core/failure.dart';
 import 'package:arenahub/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:arenahub/features/auth/presentation/pages/login_page.dart';
-import 'package:arenahub/features/courts/presentation/pages/courts_page.dart';
+import 'package:arenahub/features/courts/presentation/pages/home_shell.dart';
 import 'package:arenahub/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -75,6 +75,7 @@ void main() {
         authController: controller,
         courtsController: courtsControllerWith(),
         bookingController: bookingControllerWith(),
+        myBookingsController: myBookingsControllerWith(),
       ),
     );
     await tester.pumpAndSettle();
@@ -91,7 +92,7 @@ void main() {
 
     // Autenticado, o gate entrega a lista de quadras.
     expect(find.byType(LoginPage), findsNothing);
-    expect(find.byType(CourtsPage), findsOneWidget);
+    expect(find.byType(HomeShell), findsOneWidget);
     expect(find.text('Olá, Craque'), findsOneWidget);
     expect(find.text('Arena Jatiúca'), findsOneWidget);
 
