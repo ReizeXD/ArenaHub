@@ -31,8 +31,10 @@ import '../features/courts/domain/repositories/court_repository.dart';
 import '../features/courts/domain/usecases/book_court.dart';
 import '../features/courts/domain/usecases/get_court_availability.dart';
 import '../features/courts/domain/usecases/list_courts.dart';
+import '../features/courts/domain/usecases/list_my_bookings.dart';
 import '../features/courts/presentation/controllers/booking_controller.dart';
 import '../features/courts/presentation/controllers/courts_controller.dart';
+import '../features/courts/presentation/controllers/my_bookings_controller.dart';
 import '../firebase_options.dart';
 import 'auth_mode.dart';
 
@@ -46,11 +48,13 @@ class Injector {
     this.authController,
     this.courtsController,
     this.bookingController,
+    this.myBookingsController,
   );
 
   final AuthController authController;
   final CourtsController courtsController;
   final BookingController bookingController;
+  final MyBookingsController myBookingsController;
 
   static Future<Injector> bootstrap({AuthMode mode = AuthMode.local}) async {
     if (mode == AuthMode.firebase) {
@@ -82,6 +86,7 @@ class Injector {
         GetCourtAvailability(bookings),
         BookCourt(bookings),
       ),
+      MyBookingsController(ListMyBookings(bookings, courts)),
     );
   }
 

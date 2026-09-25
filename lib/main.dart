@@ -8,7 +8,8 @@ import 'features/auth/presentation/pages/login_page.dart';
 import 'features/auth/presentation/states/auth_state.dart';
 import 'features/courts/presentation/controllers/booking_controller.dart';
 import 'features/courts/presentation/controllers/courts_controller.dart';
-import 'features/courts/presentation/pages/courts_page.dart';
+import 'features/courts/presentation/controllers/my_bookings_controller.dart';
+import 'features/courts/presentation/pages/home_shell.dart';
 
 /// Origem da autenticação deste build.
 ///
@@ -28,6 +29,7 @@ Future<void> main() async {
       authController: injector.authController,
       courtsController: injector.courtsController,
       bookingController: injector.bookingController,
+      myBookingsController: injector.myBookingsController,
     ),
   );
 }
@@ -38,11 +40,13 @@ class ArenaHubApp extends StatelessWidget {
     required this.authController,
     required this.courtsController,
     required this.bookingController,
+    required this.myBookingsController,
   });
 
   final AuthController authController;
   final CourtsController courtsController;
   final BookingController bookingController;
+  final MyBookingsController myBookingsController;
 
   @override
   Widget build(BuildContext context) {
@@ -52,6 +56,9 @@ class ArenaHubApp extends StatelessWidget {
         ChangeNotifierProvider<CourtsController>.value(value: courtsController),
         ChangeNotifierProvider<BookingController>.value(
           value: bookingController,
+        ),
+        ChangeNotifierProvider<MyBookingsController>.value(
+          value: myBookingsController,
         ),
       ],
       child: MaterialApp(
@@ -88,7 +95,7 @@ class AuthGate extends StatelessWidget {
           backgroundColor: Colors.white,
           body: Center(child: CircularProgressIndicator()),
         ),
-      Authenticated(:final session) => CourtsPage(session: session),
+      Authenticated(:final session) => HomeShell(session: session),
       Unauthenticated() || AuthInProgress() || AuthFailed() => const LoginPage(),
     };
   }
