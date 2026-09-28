@@ -1,10 +1,6 @@
 import 'role.dart';
 
 /// Usuário autenticado do sistema.
-///
-/// A entidade não conhece banco, JSON nem HTTP: a tradução para cada formato
-/// mora na camada de dados (SRP). Repare que a senha **não** aparece aqui —
-/// hash de senha é detalhe de persistência, não de domínio.
 class User {
   const User({
     required this.id,

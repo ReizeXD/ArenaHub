@@ -1,10 +1,6 @@
 import 'failure.dart';
 
 /// Resultado explícito de uma operação: sucesso com valor ou falha tipada.
-///
-/// Substitui o par `throw Exception(...)` / `catch` no fluxo de negócio. A
-/// diferença prática: o compilador obriga quem chama a tratar os dois casos,
-/// e a falha chega como tipo, não como texto a ser interpretado.
 sealed class Result<T> {
   const Result();
 

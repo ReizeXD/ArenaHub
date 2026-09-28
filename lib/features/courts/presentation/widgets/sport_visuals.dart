@@ -3,9 +3,6 @@ import 'package:flutter/material.dart';
 import '../../domain/entities/sport.dart';
 
 /// Ícone e cor de cada modalidade.
-///
-/// Fica na apresentação de propósito: como a quadra é desenhada não é regra
-/// de negócio, e o `Sport` do domínio não deve conhecer `Colors` (SRP).
 extension SportVisuals on Sport {
   IconData get icon => switch (this) {
         Sport.futsal || Sport.society => Icons.sports_soccer_rounded,
@@ -24,9 +21,6 @@ extension SportVisuals on Sport {
 }
 
 /// Capa de uma quadra: gradiente da modalidade com o ícone ao centro.
-///
-/// Não usa imagem de rede — a tela não quebra sem internet, e o app não
-/// depende do Firebase Storage, o único serviço que exigiria cartão.
 class CourtCover extends StatelessWidget {
   const CourtCover({
     super.key,

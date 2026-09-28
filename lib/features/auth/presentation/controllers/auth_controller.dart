@@ -10,10 +10,6 @@ import '../../domain/usecases/sign_up.dart';
 import '../states/auth_state.dart';
 
 /// Liga a interface aos casos de uso.
-///
-/// Depende apenas de casos de uso — não conhece repositório, banco nem HTTP.
-/// Por isso a mesma tela funcionaria contra um backend sem uma linha de
-/// mudança aqui.
 class AuthController extends ChangeNotifier {
   AuthController(
     this._signIn,

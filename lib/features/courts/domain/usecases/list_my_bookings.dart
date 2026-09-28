@@ -6,14 +6,6 @@ import '../repositories/booking_repository.dart';
 import '../repositories/court_repository.dart';
 
 /// Caso de uso: as reservas do usuário, com a quadra de cada uma.
-///
-/// Aqui mora a junção que o banco de documentos não faz: lê as reservas, lê
-/// o catálogo e cruza pelo `courtId`. Fica no caso de uso, e não na tela,
-/// porque é regra de composição do dado — a tela só recebe pronto (SRP).
-///
-/// Reserva cuja quadra não existe mais é descartada em silêncio: sem chave
-/// estrangeira, o banco não impede que isso aconteça, então quem lê precisa
-/// aguentar o caso.
 class ListMyBookings {
   const ListMyBookings(
     this._bookings,

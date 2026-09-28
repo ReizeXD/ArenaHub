@@ -5,10 +5,6 @@ import '../../domain/repositories/court_repository.dart';
 import '../seed/demo_courts.dart';
 
 /// [CourtRepository] servindo um catálogo fixo em memória.
-///
-/// Primeira implementação do port — roda sem rede e sem configuração. Quando
-/// o Firestore entrar, ele será a segunda, e nenhuma linha de domínio ou de
-/// tela muda por causa disso.
 class InMemoryCourtRepository implements CourtRepository {
   const InMemoryCourtRepository([this._courts = demoCourts]);
 

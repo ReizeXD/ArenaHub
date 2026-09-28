@@ -5,9 +5,6 @@ import '../../domain/entities/role.dart';
 import '../../domain/entities/user.dart';
 
 /// Traduz [AuthSession] de/para JSON.
-///
-/// A tradução mora aqui, e não na entidade: mudar o formato de
-/// armazenamento não deve ser motivo para mexer no domínio (SRP).
 class SessionJsonMapper {
   const SessionJsonMapper();
 

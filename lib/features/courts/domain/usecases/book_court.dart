@@ -5,10 +5,6 @@ import '../entities/court.dart';
 import '../repositories/booking_repository.dart';
 
 /// Caso de uso: reservar uma hora numa quadra.
-///
-/// Valida antes de escrever: horário no passado, fora do funcionamento ou já
-/// ocupado são recusados aqui, com falha tipada. O repositório só é chamado
-/// quando a reserva é legítima.
 class BookCourt {
   const BookCourt(this._bookings, {DateTime Function()? now})
       : _now = now ?? DateTime.now;

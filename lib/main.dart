@@ -12,10 +12,6 @@ import 'features/courts/presentation/controllers/my_bookings_controller.dart';
 import 'features/courts/presentation/pages/home_shell.dart';
 
 /// Origem da autenticação deste build.
-///
-/// Trocar esta constante troca o backend inteiro de autenticação — é o
-/// resultado prático de todo o resto do app depender só de abstrações.
-/// `AuthMode.firebase` exige ter rodado `flutterfire configure`.
 const AuthMode kAuthMode = AuthMode.firebase;
 
 Future<void> main() async {
@@ -80,9 +76,6 @@ class ArenaHubApp extends StatelessWidget {
 }
 
 /// Decide qual tela mostrar a partir do estado da autenticação.
-///
-/// Centralizar a navegação aqui evita que cada tela conheça a próxima: a
-/// `LoginPage` não importa a `CourtsPage`, e vice-versa.
 class AuthGate extends StatelessWidget {
   const AuthGate({super.key});
 

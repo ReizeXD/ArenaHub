@@ -4,8 +4,6 @@ import '../../domain/entities/role.dart';
 import 'user_profile_data_source.dart';
 
 /// [UserProfileDataSource] sobre Cloud Firestore, na coleção `users`.
-///
-/// Um documento por usuário, com o mesmo id que o Firebase Auth atribui.
 class FirestoreUserProfileDataSource implements UserProfileDataSource {
   const FirestoreUserProfileDataSource(this._firestore);
 

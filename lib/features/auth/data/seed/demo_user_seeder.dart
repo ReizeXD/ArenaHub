@@ -5,10 +5,6 @@ import '../datasources/user_data_source.dart';
 import '../models/user_record.dart';
 
 /// Contas de demonstração, criadas na primeira execução.
-///
-/// Existem porque a tela de cadastro ainda não foi feita; quando ela chegar,
-/// basta parar de chamar o seeder. As senhas são gravadas com o mesmo hasher
-/// da aplicação — não há senha em texto puro em lugar nenhum do projeto.
 class DemoUserSeeder {
   const DemoUserSeeder(this._dataSource, this._passwordHasher);
 

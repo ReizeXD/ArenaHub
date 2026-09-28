@@ -7,12 +7,6 @@ import 'package:crypto/crypto.dart';
 import '../../domain/services/password_hasher.dart';
 
 /// Implementação de [PasswordHasher] com PBKDF2-HMAC-SHA256.
-///
-/// Cada senha recebe um salt aleatório próprio, e o hash carrega os
-/// parâmetros usados para gerá-lo — assim é possível aumentar o número de
-/// iterações no futuro sem invalidar as senhas já cadastradas.
-///
-/// Formato: `pbkdf2-sha256$<iteracoes>$<salt-base64>$<hash-base64>`
 class Pbkdf2PasswordHasher implements PasswordHasher {
   Pbkdf2PasswordHasher({this.iterations = 12000, Random? random})
       : _random = random ?? Random.secure();

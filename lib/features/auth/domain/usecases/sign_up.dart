@@ -9,9 +9,6 @@ import '../value_objects/email.dart';
 import '../value_objects/password.dart';
 
 /// Caso de uso: criar conta.
-///
-/// Toda a validação acontece aqui, antes de tocar em qualquer adaptador — o
-/// repositório recebe [SignUpData] e pode confiar nele.
 class SignUp {
   const SignUp(this._repository, this._sessionStorage);
 

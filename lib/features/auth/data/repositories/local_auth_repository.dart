@@ -11,12 +11,6 @@ import '../datasources/user_data_source.dart';
 import '../models/user_record.dart';
 
 /// Adaptador de autenticação **offline**.
-///
-/// Guarda os usuários no dispositivo e emite o próprio token de sessão, então
-/// o app roda sem depender de backend.
-///
-/// Depende de [UserDataSource] e [PasswordHasher] por abstração: nem o banco
-/// nem o algoritmo de hash estão amarrados aqui.
 class LocalAuthRepository implements AuthRepository {
   LocalAuthRepository(
     this._dataSource,

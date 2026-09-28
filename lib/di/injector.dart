@@ -39,10 +39,6 @@ import '../firebase_options.dart';
 import 'auth_mode.dart';
 
 /// Composition root: o **único** ponto do app que menciona classes concretas.
-///
-/// Os dois `switch` abaixo são o projeto inteiro trocando de infraestrutura.
-/// Nenhuma entidade, caso de uso, controller ou tela sabe que essa escolha
-/// existe — todos conhecem apenas as interfaces.
 class Injector {
   const Injector._(
     this.authController,

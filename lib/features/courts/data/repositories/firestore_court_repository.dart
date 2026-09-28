@@ -8,9 +8,6 @@ import '../mappers/court_mapper.dart';
 import 'firestore_failures.dart';
 
 /// [CourtRepository] sobre a coleção `courts` do Firestore.
-///
-/// Segunda implementação do mesmo port — a primeira é a em memória. Nenhum
-/// caso de uso, controller ou tela muda para usar uma ou outra.
 class FirestoreCourtRepository implements CourtRepository {
   const FirestoreCourtRepository(
     this._firestore, [

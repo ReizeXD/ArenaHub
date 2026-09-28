@@ -1,10 +1,4 @@
 /// Falhas de negócio conhecidas do ArenaHub.
-///
-/// Modelar as falhas como um tipo selado (em vez de lançar exceções soltas)
-/// garante que qualquer implementação de um port — local, remota ou fake de
-/// teste — devolva o mesmo vocabulário de erro. É o que sustenta o Princípio
-/// de Substituição de Liskov: trocar o adaptador não muda como o chamador
-/// trata os erros.
 sealed class Failure {
   const Failure(this.message);
 

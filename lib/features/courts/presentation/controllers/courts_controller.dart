@@ -5,9 +5,6 @@ import '../../domain/usecases/list_courts.dart';
 import '../states/courts_state.dart';
 
 /// Liga a tela de listagem ao caso de uso.
-///
-/// Como o `AuthController`, depende apenas de caso de uso — não sabe se as
-/// quadras vêm de memória, do Firestore ou de uma API.
 class CourtsController extends ChangeNotifier {
   CourtsController(this._listCourts);
 

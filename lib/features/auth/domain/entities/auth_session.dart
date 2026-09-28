@@ -1,10 +1,6 @@
 import 'user.dart';
 
 /// Sessão ativa: quem está autenticado e por quanto tempo.
-///
-/// O token é opaco de propósito. Hoje o adaptador local emite um token
-/// próprio; amanhã um adaptador HTTP entregaria o JWT de um backend. Nenhuma
-/// camada acima precisa saber a diferença.
 class AuthSession {
   const AuthSession({
     required this.user,

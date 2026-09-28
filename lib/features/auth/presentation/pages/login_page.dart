@@ -6,9 +6,6 @@ import '../controllers/auth_controller.dart';
 import '../states/auth_state.dart';
 
 /// Tela de entrada.
-///
-/// Não navega e não decide nada sobre autenticação: dispara o caso de uso e
-/// reage ao estado. Quem troca de tela é o `AuthGate`, em `main.dart`.
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 

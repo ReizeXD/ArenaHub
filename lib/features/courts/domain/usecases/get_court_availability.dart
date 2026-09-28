@@ -5,10 +5,6 @@ import '../entities/time_slot.dart';
 import '../repositories/booking_repository.dart';
 
 /// Caso de uso: montar a agenda de um dia para uma quadra.
-///
-/// A regra de "qual horário aparece livre" vive aqui, e não na tela: um
-/// horário está disponível quando está dentro do funcionamento da quadra,
-/// ainda não passou e ninguém reservou.
 class GetCourtAvailability {
   const GetCourtAvailability(this._bookings, {DateTime Function()? now})
       : _now = now ?? DateTime.now;

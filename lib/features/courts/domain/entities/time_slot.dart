@@ -1,7 +1,4 @@
 /// Um horário de uma hora na agenda de uma quadra.
-///
-/// Não é persistido: é calculado a partir do horário de funcionamento da
-/// quadra menos as reservas já existentes.
 class TimeSlot {
   const TimeSlot({
     required this.start,

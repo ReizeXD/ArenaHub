@@ -12,14 +12,6 @@ import '../../domain/value_objects/password.dart';
 import '../datasources/user_profile_data_source.dart';
 
 /// Adaptador de autenticação sobre o **Firebase**.
-///
-/// Segunda implementação de [AuthRepository], irmã de `LocalAuthRepository`.
-/// Nenhum caso de uso, controller ou tela muda para usá-la — só a linha do
-/// composition root que escolhe qual das duas instanciar.
-///
-/// Divisão de trabalho: o Firebase Auth cuida da credencial (e do hash da
-/// senha, no servidor dele); o [UserProfileDataSource] cuida de nome e papel,
-/// que o Auth não armazena.
 class FirebaseAuthRepository implements AuthRepository {
   const FirebaseAuthRepository(
     this._auth,
@@ -31,11 +23,6 @@ class FirebaseAuthRepository implements AuthRepository {
   final UserProfileDataSource _profiles;
 
   /// Por quanto tempo a sessão salva no aparelho continua valendo.
-  ///
-  /// Deliberadamente **não** é a validade do ID token (1 hora): o token é
-  /// renovado sozinho pelo SDK do Firebase, então expirar a sessão junto com
-  /// ele deslogaria a pessoa de hora em hora sem necessidade. Mesmo prazo do
-  /// adaptador local, para que os dois se comportem igual.
   final Duration sessionDuration;
 
   @override
@@ -111,14 +98,6 @@ class FirebaseAuthRepository implements AuthRepository {
   }
 
   /// Busca o perfil tolerando falha.
-  ///
-  /// O perfil é **complementar**: o Firebase Auth já autenticou a pessoa
-  /// antes desta chamada. Se o Firestore não existir no projeto, estiver fora
-  /// do ar ou negar a leitura, não faz sentido recusar um login que já deu
-  /// certo — degrada para "sem perfil", e o papel cai no menor privilégio.
-  ///
-  /// Por isso o Firestore é opcional: sem ele o login funciona, só que todo
-  /// mundo entra como jogador.
   static Future<UserProfile?> profileOrNull(
     UserProfileDataSource profiles,
     String uid,
@@ -146,10 +125,6 @@ class FirebaseAuthRepository implements AuthRepository {
 
   /// Traduz o código de erro do Firebase para o vocabulário de falhas do
   /// domínio.
-  ///
-  /// É o que mantém a substituição de Liskov de pé: quem chama trata
-  /// `InvalidCredentialsFailure` igual, venha ela do SQLite ou do Firebase.
-  /// Público para poder ser testado sem subir o Firebase.
   static Failure failureFor(String code) => switch (code) {
         'invalid-credential' ||
         'invalid-login-credentials' ||

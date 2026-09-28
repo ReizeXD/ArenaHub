@@ -4,12 +4,6 @@ import '../../domain/repositories/court_repository.dart';
 
 /// Decorador que semeia o catálogo na primeira leitura, quando ele está
 /// vazio.
-///
-/// Existe porque ainda não há painel de administração: alguém precisa colocar
-/// as quadras iniciais no banco. Envolver o repositório em vez de alterá-lo
-/// mantém o `FirestoreCourtRepository` com uma responsabilidade só, e some
-/// daqui sem deixar rastro quando o cadastro de quadras pelo dono existir —
-/// é remover uma linha do composition root.
 class SeedingCourtRepository implements CourtRepository {
   const SeedingCourtRepository(this._inner, this._seed);
 

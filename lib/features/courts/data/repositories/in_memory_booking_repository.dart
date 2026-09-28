@@ -4,9 +4,6 @@ import '../../domain/entities/booking.dart';
 import '../../domain/repositories/booking_repository.dart';
 
 /// [BookingRepository] guardando as reservas em memória.
-///
-/// As reservas somem ao fechar o app — é o limite conhecido desta
-/// implementação, e o motivo de o Firestore entrar depois.
 class InMemoryBookingRepository implements BookingRepository {
   final List<Booking> _bookings = <Booking>[];
 

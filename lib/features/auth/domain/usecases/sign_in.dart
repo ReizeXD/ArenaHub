@@ -6,10 +6,6 @@ import '../value_objects/email.dart';
 import '../value_objects/password.dart';
 
 /// Caso de uso: entrar no sistema.
-///
-/// Uma responsabilidade só (SRP): validar a entrada, delegar a autenticação
-/// ao port e guardar a sessão resultante. Não sabe se por trás há SQLite,
-/// memória ou um fake de teste.
 class SignIn {
   const SignIn(this._repository, this._sessionStorage);
 

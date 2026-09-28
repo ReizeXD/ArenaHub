@@ -2,10 +2,6 @@ import '../../domain/entities/court.dart';
 import '../../domain/entities/sport.dart';
 
 /// Catálogo inicial de quadras.
-///
-/// Vive na camada de dados porque é dado semeado, não regra: quando as
-/// quadras passarem a vir do Firestore, este arquivo vira a carga inicial da
-/// coleção e some daqui — sem que nada do domínio mude.
 const List<Court> demoCourts = <Court>[
   Court(
     id: 'jatiuca',

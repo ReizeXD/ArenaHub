@@ -1,13 +1,6 @@
 import 'sport.dart';
 
 /// Uma quadra disponível para aluguel.
-///
-/// O preço é guardado em **centavos**, como inteiro. Dinheiro em `double`
-/// acumula erro de arredondamento: `0.1 + 0.2` não dá `0.3` em ponto
-/// flutuante, e numa soma de reservas isso aparece.
-///
-/// O horário de funcionamento é dado da quadra, não constante do sistema —
-/// cada uma pode abrir e fechar quando quiser.
 class Court {
   const Court({
     required this.id,

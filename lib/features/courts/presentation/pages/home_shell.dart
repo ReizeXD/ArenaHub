@@ -7,9 +7,6 @@ import 'courts_page.dart';
 import 'my_bookings_page.dart';
 
 /// Moldura de quem está logado: cabeçalho, abas e a navegação entre elas.
-///
-/// Usa `IndexedStack` para que trocar de aba não descarte o estado da outra —
-/// a lista de quadras não recarrega toda vez que se volta para ela.
 class HomeShell extends StatefulWidget {
   const HomeShell({super.key, required this.session});
 

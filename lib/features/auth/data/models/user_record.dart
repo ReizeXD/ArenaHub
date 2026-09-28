@@ -3,9 +3,6 @@ import '../../domain/entities/user.dart';
 
 /// Como um usuário é guardado localmente: a entidade de domínio mais o hash
 /// da senha, que é assunto exclusivo da persistência.
-///
-/// Repare que este modelo **compõe** a entidade em vez de herdar dela: o
-/// domínio não ganha campos de banco por tabela de dentro.
 class UserRecord {
   const UserRecord({required this.user, required this.passwordHash});
 

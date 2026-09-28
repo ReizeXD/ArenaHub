@@ -2,10 +2,6 @@ import '../../../../core/failure.dart';
 import '../../../../core/result.dart';
 
 /// E-mail válido por construção.
-///
-/// A regra de validação vive num único lugar; telas, casos de uso e
-/// adaptadores apenas a consomem (SRP). Não existe `Email` inválido em
-/// circulação — o construtor é privado e a única porta de entrada valida.
 class Email {
   const Email._(this.value);
 

@@ -7,8 +7,6 @@ import '../repositories/firestore_failures.dart';
 import 'demo_courts.dart';
 
 /// Grava o catálogo inicial de quadras no Firestore.
-///
-/// Uma escrita em lote: ou entram todas, ou nenhuma.
 class FirestoreCourtSeeder {
   const FirestoreCourtSeeder(
     this._firestore, [

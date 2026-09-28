@@ -8,9 +8,6 @@ import '../widgets/sport_visuals.dart';
 import 'court_detail_page.dart';
 
 /// Aba de quadras disponíveis.
-///
-/// Sem `Scaffold` nem `AppBar`: quem monta a moldura é a `HomeShell`, para
-/// que as duas abas dividam o cabeçalho e a navegação.
 class CourtsPage extends StatefulWidget {
   const CourtsPage({super.key});
 

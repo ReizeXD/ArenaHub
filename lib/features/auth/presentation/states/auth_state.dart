@@ -2,9 +2,6 @@ import '../../../../core/failure.dart';
 import '../../domain/entities/auth_session.dart';
 
 /// Estados possíveis da autenticação.
-///
-/// Tipo selado: o `switch` na interface é exaustivo, e acrescentar um estado
-/// novo vira erro de compilação em quem esqueceu de tratá-lo.
 sealed class AuthState {
   const AuthState();
 }

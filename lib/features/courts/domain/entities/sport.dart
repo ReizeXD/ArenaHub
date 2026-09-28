@@ -1,8 +1,4 @@
 /// Modalidade de uma quadra.
-///
-/// `wire` é o valor estável usado na persistência, separado de `label` para
-/// que renomear o texto exibido nunca invalide um dado já gravado — mesma
-/// regra do `Role`.
 enum Sport {
   futsal('FUTSAL', 'Futsal'),
   society('SOCIETY', 'Society'),

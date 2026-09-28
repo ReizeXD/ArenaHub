@@ -2,9 +2,6 @@ import '../../domain/entities/court.dart';
 import '../../domain/entities/sport.dart';
 
 /// Traduz [Court] de/para o formato do documento no Firestore.
-///
-/// A tradução mora aqui, não na entidade: mudar o nome de um campo no banco
-/// não deve ser motivo para mexer no domínio (SRP).
 class CourtMapper {
   const CourtMapper();
 

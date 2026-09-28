@@ -2,11 +2,6 @@ import 'booking.dart';
 import 'court.dart';
 
 /// Uma reserva junto da quadra a que ela pertence.
-///
-/// Existe porque o documento da reserva guarda só o `courtId` — banco de
-/// documentos não tem JOIN. A junção acontece no caso de uso, que lê as duas
-/// coleções e cruza em memória. Para a tela, o resultado é o mesmo que uma
-/// consulta com JOIN entregaria.
 class BookingWithCourt {
   const BookingWithCourt({
     required this.booking,

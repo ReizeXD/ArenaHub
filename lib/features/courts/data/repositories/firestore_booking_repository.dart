@@ -13,13 +13,6 @@ class _SlotAlreadyTaken implements Exception {
 }
 
 /// [BookingRepository] sobre a coleção `bookings` do Firestore.
-///
-/// **Como a reserva dupla é impedida.** O id do documento é derivado do que a
-/// reserva ocupa (`pajucara__2026-09-28__19`), então dois pedidos para o
-/// mesmo horário apontam para o mesmo documento. A gravação acontece dentro
-/// de uma transação que lê o documento antes de escrever: se ele já existe, a
-/// transação aborta. É o equivalente ao `UNIQUE (court_id, start_at)` do SQL,
-/// expresso na chave em vez de no esquema.
 class FirestoreBookingRepository implements BookingRepository {
   const FirestoreBookingRepository(
     this._firestore, [

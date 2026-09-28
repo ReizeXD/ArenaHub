@@ -17,13 +17,6 @@ class Booking {
   DateTime get end => start.add(duration);
 
   /// Identidade derivada do que a reserva ocupa: quadra, dia e hora.
-  ///
-  /// Não é detalhe de banco — é a regra de que **um horário de uma quadra
-  /// comporta no máximo uma reserva**, dita na própria identidade. Quem
-  /// persiste ganha a unicidade de graça: gravar duas vezes o mesmo id é
-  /// gravar o mesmo documento, e a implementação recusa a segunda.
-  ///
-  /// `pajucara__2026-09-28__19`
   static String slotId({required String courtId, required DateTime start}) {
     final month = start.month.toString().padLeft(2, '0');
     final day = start.day.toString().padLeft(2, '0');
@@ -33,9 +26,6 @@ class Booking {
   }
 
   /// Chave de consulta da agenda: `pajucara|2026-09-28`.
-  ///
-  /// Um único campo com quadra e dia juntos permite buscar a agenda com um
-  /// filtro de igualdade só — sem índice composto.
   static String courtDayKey({
     required String courtId,
     required DateTime day,
