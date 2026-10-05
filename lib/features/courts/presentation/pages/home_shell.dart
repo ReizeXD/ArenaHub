@@ -113,12 +113,6 @@ class _Header extends StatelessWidget implements PreferredSizeWidget {
                         color: AppColors.primaryFixed.withValues(alpha: 0.5),
                         borderRadius: BorderRadius.circular(AppRadius.xxl),
                       ),
-                      child: Text(
-                        'MACEIÓ, AL',
-                        style: AppText.labelCaps.copyWith(
-                          color: AppColors.primary,
-                        ),
-                      ),
                     ),
                   ],
                 ),
