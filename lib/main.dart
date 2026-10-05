@@ -10,6 +10,7 @@ import 'features/courts/presentation/controllers/booking_controller.dart';
 import 'features/courts/presentation/controllers/courts_controller.dart';
 import 'features/courts/presentation/controllers/my_bookings_controller.dart';
 import 'features/courts/presentation/pages/home_shell.dart';
+import 'theme/app_theme.dart';
 
 /// Origem da autenticação deste build.
 const AuthMode kAuthMode = AuthMode.firebase;
@@ -60,15 +61,7 @@ class ArenaHubApp extends StatelessWidget {
       child: MaterialApp(
         title: 'ArenaHub',
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          useMaterial3: true,
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color(0xFF10B981),
-            brightness: Brightness.light,
-          ),
-          scaffoldBackgroundColor: Colors.white,
-          fontFamily: 'Roboto',
-        ),
+        theme: AppTheme.light,
         home: const AuthGate(),
       ),
     );
@@ -84,10 +77,8 @@ class AuthGate extends StatelessWidget {
     final state = context.watch<AuthController>().state;
 
     return switch (state) {
-      AuthChecking() => const Scaffold(
-          backgroundColor: Colors.white,
-          body: Center(child: CircularProgressIndicator()),
-        ),
+      AuthChecking() =>
+        const Scaffold(body: Center(child: CircularProgressIndicator())),
       Authenticated(:final session) => HomeShell(session: session),
       Unauthenticated() || AuthInProgress() || AuthFailed() => const LoginPage(),
     };

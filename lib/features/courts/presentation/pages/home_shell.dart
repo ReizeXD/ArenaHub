@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../theme/app_colors.dart';
+import '../../../../theme/app_theme.dart';
+import '../../../../theme/app_typography.dart';
 import '../../../auth/domain/entities/auth_session.dart';
 import '../../../auth/presentation/controllers/auth_controller.dart';
 import 'courts_page.dart';
@@ -23,55 +26,22 @@ class _HomeShellState extends State<HomeShell> {
   int _index = 0;
 
   static const List<String> _subtitles = [
-    'Escolha uma quadra para reservar',
+    'Encontre e reserve sua quadra hoje',
     'Seus horários reservados',
   ];
 
   void _onTabSelected(int index) {
     setState(() => _index = index);
-
-    // Ao voltar para as reservas, recarrega: pode ter sido feita uma reserva
-    // na outra aba desde a última vez.
     if (index == 1) _bookingsKey.currentState?.reload();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        titleSpacing: 20,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Olá, ${widget.session.user.firstName}',
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-            ),
-            Text(
-              _subtitles[_index],
-              style: TextStyle(fontSize: 13, color: Colors.grey[600]),
-            ),
-          ],
-        ),
-        actions: [
-          IconButton(
-            tooltip: 'Sair',
-            icon: const Icon(Icons.logout_rounded, color: Colors.black54),
-            onPressed: () => context.read<AuthController>().signOut(),
-          ),
-          const SizedBox(width: 8),
-        ],
-      ),
+      extendBody: true,
+      appBar: _Header(session: widget.session, subtitle: _subtitles[_index]),
       body: SafeArea(
+        bottom: false,
         child: IndexedStack(
           index: _index,
           children: [
@@ -80,23 +50,190 @@ class _HomeShellState extends State<HomeShell> {
           ],
         ),
       ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _index,
-        onDestinationSelected: _onTabSelected,
-        backgroundColor: Colors.white,
-        indicatorColor: const Color(0xFF10B981).withValues(alpha: 0.14),
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.sports_soccer_outlined),
-            selectedIcon: Icon(Icons.sports_soccer_rounded),
-            label: 'Quadras',
+      bottomNavigationBar: _FloatingNav(
+        index: _index,
+        onSelected: _onTabSelected,
+      ),
+    );
+  }
+}
+
+/// Cabeçalho com marca, saudação e saída.
+class _Header extends StatelessWidget implements PreferredSizeWidget {
+  const _Header({required this.session, required this.subtitle});
+
+  final AuthSession session;
+  final String subtitle;
+
+  @override
+  Size get preferredSize => const Size.fromHeight(76);
+
+  @override
+  Widget build(BuildContext context) {
+    return AppBar(
+      toolbarHeight: 76,
+      titleSpacing: AppSpacing.margin,
+      title: Row(
+        children: [
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: AppColors.primary,
+              borderRadius: BorderRadius.circular(AppRadius.lg),
+            ),
+            child: const Icon(
+              Icons.sports_soccer_rounded,
+              size: 21,
+              color: Colors.white,
+            ),
           ),
-          NavigationDestination(
-            icon: Icon(Icons.event_note_outlined),
-            selectedIcon: Icon(Icons.event_note_rounded),
-            label: 'Reservas',
+          const SizedBox(width: AppSpacing.sm + 4),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        'Olá, ${session.user.firstName}',
+                        overflow: TextOverflow.ellipsis,
+                        style: AppText.headlineMd,
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.sm,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryFixed.withValues(alpha: 0.5),
+                        borderRadius: BorderRadius.circular(AppRadius.xxl),
+                      ),
+                      child: Text(
+                        'MACEIÓ, AL',
+                        style: AppText.labelCaps.copyWith(
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                Text(
+                  subtitle,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppText.bodySm,
+                ),
+              ],
+            ),
           ),
         ],
+      ),
+      actions: [
+        IconButton(
+          tooltip: 'Sair',
+          icon: const Icon(Icons.logout_rounded),
+          color: AppColors.onSurfaceVariant,
+          onPressed: () => context.read<AuthController>().signOut(),
+        ),
+        const SizedBox(width: AppSpacing.sm),
+      ],
+    );
+  }
+}
+
+/// Barra inferior flutuante, como no design.
+class _FloatingNav extends StatelessWidget {
+  const _FloatingNav({required this.index, required this.onSelected});
+
+  final int index;
+  final ValueChanged<int> onSelected;
+
+  static const List<({IconData icon, IconData active, String label})> _tabs = [
+    (
+      icon: Icons.sports_soccer_outlined,
+      active: Icons.sports_soccer_rounded,
+      label: 'Quadras'
+    ),
+    (
+      icon: Icons.event_note_outlined,
+      active: Icons.event_note_rounded,
+      label: 'Reservas'
+    ),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      top: false,
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(
+          AppSpacing.margin,
+          0,
+          AppSpacing.margin,
+          AppSpacing.sm + 4,
+        ),
+        padding: const EdgeInsets.all(AppSpacing.xs + 2),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceLowest,
+          borderRadius: BorderRadius.circular(AppRadius.xxl),
+          border: Border.all(
+            color: AppColors.outlineVariant.withValues(alpha: 0.5),
+          ),
+          boxShadow: AppShadows.bottomBar,
+        ),
+        child: Row(
+          children: [
+            for (var i = 0; i < _tabs.length; i++)
+              Expanded(
+                child: _NavItem(
+                  tab: _tabs[i],
+                  selected: index == i,
+                  onTap: () => onSelected(i),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _NavItem extends StatelessWidget {
+  const _NavItem({
+    required this.tab,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final ({IconData icon, IconData active, String label}) tab;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = selected ? AppColors.primary : AppColors.onSurfaceVariant;
+
+    return Material(
+      color: selected ? AppColors.surfaceLow : Colors.transparent,
+      borderRadius: BorderRadius.circular(AppRadius.xl),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm + 2),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(selected ? tab.active : tab.icon, size: 22, color: color),
+              const SizedBox(height: 3),
+              Text(tab.label, style: AppText.labelMd.copyWith(color: color)),
+            ],
+          ),
+        ),
       ),
     );
   }

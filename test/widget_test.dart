@@ -23,9 +23,9 @@ void main() {
     await pumpLogin(tester, controllerWith());
 
     expect(find.text('ArenaHub'), findsOneWidget);
-    expect(find.text('E-mail'), findsOneWidget);
-    expect(find.text('Senha'), findsOneWidget);
-    expect(find.widgetWithText(ElevatedButton, 'Entrar'), findsOneWidget);
+    expect(find.text('E-mail do atleta'), findsOneWidget);
+    expect(find.text('Senha de acesso'), findsOneWidget);
+    expect(find.widgetWithText(FilledButton, 'Entrar na quadra'), findsOneWidget);
   });
 
   testWidgets('recusa e-mail inválido sem chamar o caso de uso',
@@ -35,7 +35,7 @@ void main() {
 
     await tester.enterText(find.byType(TextFormField).first, 'jogador@');
     await tester.enterText(find.byType(TextFormField).last, 'arena2026');
-    await tester.tap(find.widgetWithText(ElevatedButton, 'Entrar'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Entrar na quadra'));
     await tester.pump();
 
     // A mensagem vem do value object Email, não de uma regra reescrita na tela.
@@ -59,7 +59,7 @@ void main() {
       'jogador@arenahub.com',
     );
     await tester.enterText(find.byType(TextFormField).last, 'senhaerrada1');
-    await tester.tap(find.widgetWithText(ElevatedButton, 'Entrar'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Entrar na quadra'));
     await tester.pumpAndSettle();
 
     expect(find.text('E-mail ou senha incorretos.'), findsOneWidget);
@@ -87,7 +87,7 @@ void main() {
       'jogador@arenahub.com',
     );
     await tester.enterText(find.byType(TextFormField).last, 'arena2026');
-    await tester.tap(find.widgetWithText(ElevatedButton, 'Entrar'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Entrar na quadra'));
     await tester.pumpAndSettle();
 
     // Autenticado, o gate entrega a lista de quadras.

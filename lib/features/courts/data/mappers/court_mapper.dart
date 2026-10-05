@@ -10,6 +10,7 @@ class CourtMapper {
         'sport': court.sport.wire,
         'address': court.address,
         'price_per_hour_in_cents': court.pricePerHourInCents,
+        'image_url': court.imageUrl,
         'opening_hour': court.openingHour,
         'closing_hour': court.closingHour,
       };
@@ -22,6 +23,7 @@ class CourtMapper {
         sport: Sport.fromWire((data['sport'] as String?) ?? ''),
         address: (data['address'] as String?) ?? '',
         pricePerHourInCents: (data['price_per_hour_in_cents'] as num?)?.toInt() ?? 0,
+        imageUrl: (data['image_url'] as String?) ?? '',
         openingHour: (data['opening_hour'] as num?)?.toInt() ?? 8,
         closingHour: (data['closing_hour'] as num?)?.toInt() ?? 22,
       );

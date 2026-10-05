@@ -27,7 +27,7 @@ Requer **Flutter 3.47+** (`flutter --version`). Nenhum outro pré-requisito.
 flutter pub get
 flutter run -d chrome                    # mais rápido para desenvolver
 flutter run                              # escolhe o dispositivo conectado
-flutter test                             # 54 testes
+flutter test                             # 122 testes
 flutter analyze                          # sem issues
 ```
 
@@ -121,11 +121,41 @@ falta*).
 | `dono@arenahub.com` | `arena2026` | Dono de arena |
 | `jogador@arenahub.com` | `arena2026` | Jogador |
 
+## Design
+
+A interface segue o sistema **Athletic Modernist**, desenhado no Google Stitch
+e traduzido para Flutter em `lib/theme/`:
+
+- **Cores** em `app_colors.dart` — tokens Material 3, verde primário `#006948`
+  sobre fundo `#F8F9FF`.
+- **Tipografia** em `app_typography.dart` — Plus Jakarta Sans nos pesos 400,
+  600, 700 e 800, empacotada em `assets/fonts/` para funcionar sem internet.
+- **Espaçamento, raios e sombras** em `app_theme.dart` — grade de 8pt.
+
+### Créditos das imagens
+
+As fotos das quadras vêm do Wikimedia Commons e são carregadas por URL
+(campo `image_url` de cada quadra). Quando a imagem não carrega — sem
+internet, link fora do ar — a tela cai no gradiente da modalidade.
+
+| Quadra | Autoria | Licença | Arquivo |
+|---|---|---|---|
+| Arena Benedito Bentes | Velvet | CC BY-SA 4.0 | [Bondues beach volley aerodrome.jpg](https://commons.wikimedia.org/wiki/File:Bondues_beach_volley_aerodrome.jpg) |
+| Arena Jatiúca | bakiraj | CC BY-SA 4.0 | [Football match at night from sideline.jpg](https://commons.wikimedia.org/wiki/File:Football_match_at_night_from_sideline.jpg) |
+| Beach Club Ponta Verde | E. C. Kropp Co., Milwaukee | Public domain | [Miami Beach - Tennis Courts 01.jpg](https://commons.wikimedia.org/wiki/File:Miami_Beach_-_Tennis_Courts_01.jpg) |
+| Ginásio Farol | Orderinchaos | CC BY-SA 4.0 | [Hamersley indoor basketball court 1.jpg](https://commons.wikimedia.org/wiki/File:Hamersley_indoor_basketball_court_1.jpg) |
+| Quadra Pajuçara | Globetrotter19 | CC BY-SA 4.0 | [Halle, Inneres, Sportstrasse, 2026 Rácalmás.jpg](https://commons.wikimedia.org/wiki/File:Halle,_Inneres,_Sportstrasse,_2026_R%C3%A1calm%C3%A1s.jpg) |
+| Society Cruz das Almas | Martin Addison | CC BY-SA 2.0 | [Football Under Floodlights - geograph.org.uk - 619765.jpg](https://commons.wikimedia.org/wiki/File:Football_Under_Floodlights_-_geograph.org.uk_-_619765.jpg) |
+
+As licenças CC BY-SA exigem atribuição; é o que esta seção cumpre.
+
+
 ## Estrutura
 
 ```
 lib/
 ├── core/                         Result<T> e Failure — vocabulário de erro
+├── theme/                        cores, tipografia e espaçamentos do design
 ├── firebase_options.dart         gerado por `flutterfire configure`
 ├── di/
 │   ├── auth_mode.dart            local | firebase
@@ -146,7 +176,10 @@ lib/
     │   │   ├── seed/             contas de demonstração
     │   │   └── services/         Pbkdf2PasswordHasher, PrefsSessionStorage
     │   └── presentation/         AuthController, AuthState, LoginPage
-    └── home/presentation/        HomePage
+    └── courts/
+        ├── domain/               Court, Booking, TimeSlot, casos de uso
+        ├── data/                 Firestore e memória, mappers, seed
+        └── presentation/         lista, detalhe/reserva e minhas reservas
 ```
 
 A dependência aponta sempre para dentro: `presentation → domain ← data`.
@@ -202,7 +235,7 @@ texto puro, nem mesmo as das contas de demonstração.
 
 ## Testes
 
-54 testes, sem nenhum banco ou plugin nativo: os ports são pequenos e os
+122 testes, sem nenhum banco ou plugin nativo: os ports são pequenos e os
 dublês são escritos à mão em `test/support/fakes.dart`. Cobrem value
 objects, os quatro casos de uso, o hasher, o repositório local, o mapper de
 sessão, o seeder, o `AuthController` e a `LoginPage`.

@@ -13,7 +13,22 @@ import '../../../support/fakes.dart';
 void main() {
   final agora = DateTime(2026, 9, 28, 9, 30);
 
+  /// Rola até o alvo antes de tocar: com foto, os cartões passaram a ser
+  /// altos o bastante para sair da área visível.
+  Future<void> tocarEm(WidgetTester tester, Finder alvo) async {
+    await tester.ensureVisible(alvo);
+    await tester.pumpAndSettle();
+    await tester.tap(alvo);
+    await tester.pumpAndSettle();
+  }
+
   Future<void> pumpLogado(WidgetTester tester) async {
+    // Tamanho de telefone: o layout é desenhado para uma coluna estreita.
+    tester.view.physicalSize = const Size(1080, 2400);
+    tester.view.devicePixelRatio = 3.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
     final auth = controllerWith();
     await auth.restoreSession();
     await auth.signIn(email: 'jogador@arenahub.com', password: 'arena2026');
@@ -40,14 +55,10 @@ void main() {
   }
 
   Future<void> reservarPajucaraAmanha(WidgetTester tester) async {
-    await tester.tap(find.text('Quadra Pajuçara'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('29'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('10:00'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(FilledButton, 'Reservar'));
-    await tester.pumpAndSettle();
+    await tocarEm(tester, find.text('Quadra Pajuçara'));
+    await tocarEm(tester, find.text('29'));
+    await tocarEm(tester, find.text('10:00 – 11:00'));
+    await tocarEm(tester, find.widgetWithText(FilledButton, 'Confirmar reserva'));
   }
 
   testWidgets('lista as quadras depois do login', (tester) async {
@@ -63,31 +74,26 @@ void main() {
   testWidgets('abre o detalhe da quadra escolhida', (tester) async {
     await pumpLogado(tester);
 
-    await tester.tap(find.text('Quadra Pajuçara'));
-    await tester.pumpAndSettle();
+    await tocarEm(tester, find.text('Quadra Pajuçara'));
 
     expect(find.byType(CourtDetailPage), findsOneWidget);
-    expect(find.text('Escolha o dia'), findsOneWidget);
-    expect(find.text('Horários'), findsOneWidget);
+    expect(find.text('Selecione a data'), findsOneWidget);
+    expect(find.text('MANHÃ'), findsOneWidget);
     expect(find.text('R. Jangadeiros Alagoanos, 820 — Pajuçara'), findsOneWidget);
   });
 
   testWidgets('reserva um horário e confirma na tela', (tester) async {
     await pumpLogado(tester);
 
-    await tester.tap(find.text('Quadra Pajuçara'));
-    await tester.pumpAndSettle();
+    await tocarEm(tester, find.text('Quadra Pajuçara'));
 
     // Amanhã, para que nenhum horário esteja no passado.
-    await tester.tap(find.text('29'));
-    await tester.pumpAndSettle();
+    await tocarEm(tester, find.text('29'));
+    await tocarEm(tester, find.text('10:00 – 11:00'));
 
-    await tester.tap(find.text('10:00'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Confirmar reserva'), findsOneWidget);
-    await tester.tap(find.widgetWithText(FilledButton, 'Reservar'));
-    await tester.pumpAndSettle();
+    // Selecionar mostra a barra fixa; a reserva só acontece ao confirmar.
+    expect(find.text('Selecionado para reserva'), findsOneWidget);
+    await tocarEm(tester, find.widgetWithText(FilledButton, 'Confirmar reserva'));
 
     expect(find.textContaining('Reserva confirmada'), findsOneWidget);
   });
@@ -95,28 +101,23 @@ void main() {
   testWidgets('horário reservado deixa de ser oferecido', (tester) async {
     await pumpLogado(tester);
 
-    await tester.tap(find.text('Quadra Pajuçara'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('29'));
-    await tester.pumpAndSettle();
+    await tocarEm(tester, find.text('Quadra Pajuçara'));
+    await tocarEm(tester, find.text('29'));
+    await tocarEm(tester, find.text('10:00 – 11:00'));
+    await tocarEm(tester, find.widgetWithText(FilledButton, 'Confirmar reserva'));
 
-    await tester.tap(find.text('10:00'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(FilledButton, 'Reservar'));
-    await tester.pumpAndSettle();
-
-    // Tocar de novo no mesmo horário não deve abrir o diálogo: ele saiu de
+    // Tocar de novo no mesmo horário não seleciona nada: ele saiu de
     // circulação assim que a agenda recarregou.
-    await tester.tap(find.text('10:00'));
-    await tester.pumpAndSettle();
+    await tocarEm(tester, find.text('10:00 – 11:00'));
 
-    expect(find.text('Confirmar reserva'), findsNothing);
+    expect(find.text('Selecionado para reserva'), findsNothing);
+    expect(find.widgetWithText(FilledButton, 'Confirmar reserva'), findsNothing);
   });
 
   testWidgets('aba de reservas começa vazia', (tester) async {
     await pumpLogado(tester);
 
-    await tester.tap(find.text('Reservas'));
+    await tester.tap(find.text('Reservas').last);
     await tester.pumpAndSettle();
 
     expect(find.textContaining('ainda não reservou'), findsOneWidget);
@@ -129,10 +130,10 @@ void main() {
     // Volta do detalhe para a moldura e troca de aba.
     await tester.pageBack();
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Reservas'));
+    await tester.tap(find.text('Reservas').last);
     await tester.pumpAndSettle();
 
-    expect(find.text('Próximas'), findsOneWidget);
+    expect(find.text('Seu próximo jogo'), findsOneWidget);
     expect(find.text('Quadra Pajuçara'), findsOneWidget);
     expect(find.text('29/09 · 10:00 às 11:00'), findsOneWidget);
   });
@@ -144,6 +145,38 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(HomeShell), findsNothing);
-    expect(find.text('Entrar'), findsWidgets);
+    expect(find.text('Entrar na quadra'), findsWidgets);
+  });
+
+  testWidgets('os chips filtram a lista por modalidade', (tester) async {
+    await pumpLogado(tester);
+
+    // Sem filtro, a primeira da lista aparece. O Ginásio Farol é o quarto e
+    // nem chega a ser construído: o ListView só monta o que está visível.
+    expect(find.text('Arena Jatiúca'), findsOneWidget);
+    expect(find.text('6 quadras'), findsOneWidget);
+
+    // Futsal é o segundo chip e tem uma quadra só.
+    // O chip vem antes do cartão na árvore, então `.first` é o chip.
+    await tocarEm(tester, find.text('Futsal').first);
+
+    expect(find.text('1 quadra'), findsOneWidget);
+    expect(find.text('Quadra Pajuçara'), findsOneWidget);
+    expect(find.text('Arena Jatiúca'), findsNothing);
+  });
+
+  testWidgets('a aba Reservas mostra os contadores', (tester) async {
+    await pumpLogado(tester);
+    await reservarPajucaraAmanha(tester);
+
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    await tocarEm(tester, find.text('Reservas').last);
+
+    expect(find.text('ATIVAS'), findsOneWidget);
+    expect(find.text('CONCLUÍDAS'), findsOneWidget);
+    expect(find.text('Próxima partida'), findsOneWidget);
+    expect(find.text('Próximas (1)'), findsOneWidget);
+    expect(find.text('Anteriores (0)'), findsOneWidget);
   });
 }

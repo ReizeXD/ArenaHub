@@ -8,6 +8,7 @@ class Court {
     required this.sport,
     required this.address,
     required this.pricePerHourInCents,
+    this.imageUrl = '',
     this.openingHour = 8,
     this.closingHour = 22,
   });
@@ -17,6 +18,9 @@ class Court {
   final Sport sport;
   final String address;
   final int pricePerHourInCents;
+
+  /// Foto da quadra. Vazio é válido: a tela cai no gradiente da modalidade.
+  final String imageUrl;
 
   /// Primeira hora com início possível (8 = 08:00).
   final int openingHour;
