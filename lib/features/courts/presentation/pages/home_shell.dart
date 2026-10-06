@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../theme/app_colors.dart';
@@ -6,53 +7,45 @@ import '../../../../theme/app_theme.dart';
 import '../../../../theme/app_typography.dart';
 import '../../../auth/domain/entities/auth_session.dart';
 import '../../../auth/presentation/controllers/auth_controller.dart';
-import 'courts_page.dart';
-import 'my_bookings_page.dart';
+import '../controllers/my_bookings_controller.dart';
 
-/// Moldura de quem está logado: cabeçalho, abas e a navegação entre elas.
-class HomeShell extends StatefulWidget {
-  const HomeShell({super.key, required this.session});
+/// Moldura de quem está logado: cabeçalho e barra de abas.
+class HomeShell extends StatelessWidget {
+  const HomeShell({
+    super.key,
+    required this.session,
+    required this.navigationShell,
+  });
 
   final AuthSession session;
-
-  @override
-  State<HomeShell> createState() => _HomeShellState();
-}
-
-class _HomeShellState extends State<HomeShell> {
-  final GlobalKey<MyBookingsPageState> _bookingsKey =
-      GlobalKey<MyBookingsPageState>();
-
-  int _index = 0;
+  final StatefulNavigationShell navigationShell;
 
   static const List<String> _subtitles = [
     'Encontre e reserve sua quadra hoje',
     'Seus horários reservados',
   ];
 
-  void _onTabSelected(int index) {
-    setState(() => _index = index);
-    if (index == 1) _bookingsKey.currentState?.reload();
+  void _onTabSelected(BuildContext context, int index) {
+    navigationShell.goBranch(
+      index,
+      initialLocation: index == navigationShell.currentIndex,
+    );
+    if (index == 1) {
+      context.read<MyBookingsController>().load(session.user.id);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final index = navigationShell.currentIndex;
+
     return Scaffold(
       extendBody: true,
-      appBar: _Header(session: widget.session, subtitle: _subtitles[_index]),
-      body: SafeArea(
-        bottom: false,
-        child: IndexedStack(
-          index: _index,
-          children: [
-            const CourtsPage(),
-            MyBookingsPage(key: _bookingsKey, session: widget.session),
-          ],
-        ),
-      ),
+      appBar: _Header(session: session, subtitle: _subtitles[index]),
+      body: SafeArea(bottom: false, child: navigationShell),
       bottomNavigationBar: _FloatingNav(
-        index: _index,
-        onSelected: _onTabSelected,
+        index: index,
+        onSelected: (i) => _onTabSelected(context, i),
       ),
     );
   }

@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import 'di/auth_mode.dart';
 import 'di/injector.dart';
 import 'features/auth/presentation/controllers/auth_controller.dart';
-import 'features/auth/presentation/pages/login_page.dart';
-import 'features/auth/presentation/states/auth_state.dart';
 import 'features/courts/presentation/controllers/booking_controller.dart';
 import 'features/courts/presentation/controllers/courts_controller.dart';
 import 'features/courts/presentation/controllers/my_bookings_controller.dart';
-import 'features/courts/presentation/pages/home_shell.dart';
+import 'router/app_router.dart';
 import 'theme/app_theme.dart';
 
 /// Origem da autenticação deste build.
@@ -31,7 +30,7 @@ Future<void> main() async {
   );
 }
 
-class ArenaHubApp extends StatelessWidget {
+class ArenaHubApp extends StatefulWidget {
   const ArenaHubApp({
     super.key,
     required this.authController,
@@ -46,41 +45,44 @@ class ArenaHubApp extends StatelessWidget {
   final MyBookingsController myBookingsController;
 
   @override
-  Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider<AuthController>.value(value: authController),
-        ChangeNotifierProvider<CourtsController>.value(value: courtsController),
-        ChangeNotifierProvider<BookingController>.value(
-          value: bookingController,
-        ),
-        ChangeNotifierProvider<MyBookingsController>.value(
-          value: myBookingsController,
-        ),
-      ],
-      child: MaterialApp(
-        title: 'ArenaHub',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.light,
-        home: const AuthGate(),
-      ),
-    );
-  }
+  State<ArenaHubApp> createState() => _ArenaHubAppState();
 }
 
-/// Decide qual tela mostrar a partir do estado da autenticação.
-class AuthGate extends StatelessWidget {
-  const AuthGate({super.key});
+class _ArenaHubAppState extends State<ArenaHubApp> {
+  late final GoRouter _router = buildAppRouter(
+    auth: widget.authController,
+    courts: widget.courtsController,
+  );
+
+  @override
+  void dispose() {
+    _router.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final state = context.watch<AuthController>().state;
-
-    return switch (state) {
-      AuthChecking() =>
-        const Scaffold(body: Center(child: CircularProgressIndicator())),
-      Authenticated(:final session) => HomeShell(session: session),
-      Unauthenticated() || AuthInProgress() || AuthFailed() => const LoginPage(),
-    };
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider<AuthController>.value(
+          value: widget.authController,
+        ),
+        ChangeNotifierProvider<CourtsController>.value(
+          value: widget.courtsController,
+        ),
+        ChangeNotifierProvider<BookingController>.value(
+          value: widget.bookingController,
+        ),
+        ChangeNotifierProvider<MyBookingsController>.value(
+          value: widget.myBookingsController,
+        ),
+      ],
+      child: MaterialApp.router(
+        title: 'ArenaHub',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.light,
+        routerConfig: _router,
+      ),
+    );
   }
 }

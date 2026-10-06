@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../router/app_router.dart';
 import '../../../../theme/app_colors.dart';
 import '../../../../theme/app_theme.dart';
 import '../../../../theme/app_typography.dart';
@@ -8,7 +10,6 @@ import '../../domain/entities/court.dart';
 import '../controllers/courts_controller.dart';
 import '../states/courts_state.dart';
 import '../widgets/sport_visuals.dart';
-import 'court_detail_page.dart';
 
 /// Aba de quadras disponíveis.
 class CourtsPage extends StatefulWidget {
@@ -209,11 +210,7 @@ class _CourtCard extends StatelessWidget {
       borderRadius: AppRadius.card,
       child: InkWell(
         borderRadius: AppRadius.card,
-        onTap: () => Navigator.of(context).push(
-          MaterialPageRoute<void>(
-            builder: (_) => CourtDetailPage(court: court),
-          ),
-        ),
+        onTap: () => context.push(AppRoutes.court(court.id), extra: court),
         child: Container(
           decoration: BoxDecoration(
             borderRadius: AppRadius.card,

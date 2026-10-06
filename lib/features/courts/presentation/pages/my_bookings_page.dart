@@ -17,10 +17,10 @@ class MyBookingsPage extends StatefulWidget {
   final AuthSession session;
 
   @override
-  State<MyBookingsPage> createState() => MyBookingsPageState();
+  State<MyBookingsPage> createState() => _MyBookingsPageState();
 }
 
-class MyBookingsPageState extends State<MyBookingsPage> {
+class _MyBookingsPageState extends State<MyBookingsPage> {
   bool _showingPast = false;
 
   @override
@@ -29,7 +29,6 @@ class MyBookingsPageState extends State<MyBookingsPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) => reload());
   }
 
-  /// Recarregada também quando a aba volta ao foco.
   void reload() =>
       context.read<MyBookingsController>().load(widget.session.user.id);
 
