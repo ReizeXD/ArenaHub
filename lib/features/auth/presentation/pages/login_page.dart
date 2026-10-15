@@ -246,11 +246,6 @@ class _Highlights extends StatelessWidget {
       subtitle: 'Sem espera'
     ),
     (
-      icon: Icons.place_outlined,
-      title: 'Quadras em Maceió',
-      subtitle: 'Seis arenas'
-    ),
-    (
       icon: Icons.schedule_rounded,
       title: 'Agenda ao vivo',
       subtitle: 'Horário real'
