@@ -1,0 +1,51 @@
+rules_version = '2';
+
+// Regras de acesso do ArenaHub.
+//
+// O modo "produção" do Firestore nega tudo por padrão, então sem publicar
+// estas regras o app conecta e não consegue ler nada.
+//
+// Publique com:  firebase deploy --only firestore:rules
+// Ou pelo console: Firestore Database > aba Regras > colar > Publicar.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Perfil do usuário: nome e papel, que o Firebase Auth não guarda.
+    // Cada pessoa lê e escreve apenas o próprio documento.
+    match /users/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // Catálogo de quadras.
+    //
+    // Leitura liberada para quem está autenticado. A escrita também está,
+    // por ora, porque é o app que semeia o catálogo na primeira execução —
+    // não existe painel de administração ainda. Quando a visão do dono de
+    // arena for construída, esta linha deve passar a exigir
+    // `get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'OWNER'`.
+    match /courts/{courtId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+
+    // Reservas.
+    //
+    // Todo mundo autenticado lê: é assim que a agenda sabe quais horários
+    // estão ocupados. Mas ninguém reserva em nome de outra pessoa, e ninguém
+    // altera ou cancela a reserva alheia.
+    match /bookings/{bookingId} {
+      allow read: if request.auth != null;
+
+      allow create: if request.auth != null
+                    && request.resource.data.user_id == request.auth.uid;
+
+      allow update, delete: if request.auth != null
+                            && resource.data.user_id == request.auth.uid;
+    }
+
+    // Qualquer outro caminho continua bloqueado.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

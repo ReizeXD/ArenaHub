@@ -1,48 +1,87 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import 'features/login/data/repositories/mock_login_repository_impl.dart';
-import 'features/login/domain/repositories/login_repository.dart';
-import 'features/login/domain/usecases/login_usecase.dart';
-import 'features/login/presentation/controllers/login_controller.dart';
-import 'features/login/presentation/pages/login_page.dart';
+import 'di/auth_mode.dart';
+import 'di/injector.dart';
+import 'features/auth/presentation/controllers/auth_controller.dart';
+import 'features/courts/presentation/controllers/booking_controller.dart';
+import 'features/courts/presentation/controllers/courts_controller.dart';
+import 'features/courts/presentation/controllers/my_bookings_controller.dart';
+import 'router/app_router.dart';
+import 'theme/app_theme.dart';
 
-void main() {
-  runApp(const ArenaHubApp());
+/// Origem da autenticação deste build.
+const AuthMode kAuthMode = AuthMode.firebase;
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Dependências montadas uma única vez, antes do primeiro frame.
+  final injector = await Injector.bootstrap(mode: kAuthMode);
+
+  runApp(
+    ArenaHubApp(
+      authController: injector.authController,
+      courtsController: injector.courtsController,
+      bookingController: injector.bookingController,
+      myBookingsController: injector.myBookingsController,
+    ),
+  );
 }
 
-class ArenaHubApp extends StatelessWidget {
-  const ArenaHubApp({super.key});
+class ArenaHubApp extends StatefulWidget {
+  const ArenaHubApp({
+    super.key,
+    required this.authController,
+    required this.courtsController,
+    required this.bookingController,
+    required this.myBookingsController,
+  });
+
+  final AuthController authController;
+  final CourtsController courtsController;
+  final BookingController bookingController;
+  final MyBookingsController myBookingsController;
+
+  @override
+  State<ArenaHubApp> createState() => _ArenaHubAppState();
+}
+
+class _ArenaHubAppState extends State<ArenaHubApp> {
+  late final GoRouter _router = buildAppRouter(
+    auth: widget.authController,
+    courts: widget.courtsController,
+  );
+
+  @override
+  void dispose() {
+    _router.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    // Injeção de dependências:
-    // 1. Instanciamos a implementação do repositório (Mock)
-    final ILoginRepository loginRepository = MockLoginRepositoryImpl();
-
-    // 2. Injetamos o repositório no Caso de Uso (DIP)
-    final loginUseCase = LoginUseCase(loginRepository);
-
     return MultiProvider(
       providers: [
-        // 3. Fornecemos o LoginController para a árvore de widgets via Provider
-        ChangeNotifierProvider(
-          create: (_) => LoginController(loginUseCase),
+        ChangeNotifierProvider<AuthController>.value(
+          value: widget.authController,
+        ),
+        ChangeNotifierProvider<CourtsController>.value(
+          value: widget.courtsController,
+        ),
+        ChangeNotifierProvider<BookingController>.value(
+          value: widget.bookingController,
+        ),
+        ChangeNotifierProvider<MyBookingsController>.value(
+          value: widget.myBookingsController,
         ),
       ],
-      child: MaterialApp(
+      child: MaterialApp.router(
         title: 'ArenaHub',
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          useMaterial3: true,
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color(0xFF10B981),
-            brightness: Brightness.light,
-          ),
-          scaffoldBackgroundColor: Colors.white,
-          fontFamily: 'Roboto',
-        ),
-        home: const LoginPage(),
+        theme: AppTheme.light,
+        routerConfig: _router,
       ),
     );
   }
