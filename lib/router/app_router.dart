@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../features/auth/presentation/controllers/auth_controller.dart';
 import '../features/auth/presentation/pages/login_page.dart';
+import '../features/auth/presentation/pages/sign_up_page.dart';
 import '../features/auth/presentation/states/auth_state.dart';
 import '../features/courts/domain/entities/court.dart';
 import '../features/courts/presentation/controllers/courts_controller.dart';
@@ -15,6 +16,7 @@ import '../features/courts/presentation/states/courts_state.dart';
 abstract final class AppRoutes {
   static const splash = '/splash';
   static const login = '/login';
+  static const signUp = '/signup';
   static const courts = '/courts';
   static const bookings = '/bookings';
 
@@ -48,9 +50,13 @@ GoRouter buildAppRouter({
         return location == AppRoutes.splash ? null : AppRoutes.splash;
       }
       if (auth.state is! Authenticated) {
-        return location == AppRoutes.login ? null : AppRoutes.login;
+        final isAuthRoute =
+            location == AppRoutes.login || location == AppRoutes.signUp;
+        return isAuthRoute ? null : AppRoutes.login;
       }
-      if (location == AppRoutes.login || location == AppRoutes.splash) {
+      if (location == AppRoutes.login ||
+          location == AppRoutes.signUp ||
+          location == AppRoutes.splash) {
         return AppRoutes.courts;
       }
       return null;
@@ -62,6 +68,7 @@ GoRouter buildAppRouter({
             const Scaffold(body: Center(child: CircularProgressIndicator())),
       ),
       GoRoute(path: AppRoutes.login, builder: (_, _) => const LoginPage()),
+      GoRoute(path: AppRoutes.signUp, builder: (_, _) => const SignUpPage()),
       StatefulShellRoute.indexedStack(
         builder: (_, _, shell) =>
             HomeShell(session: auth.session!, navigationShell: shell),
