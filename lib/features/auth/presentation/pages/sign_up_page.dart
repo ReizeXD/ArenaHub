@@ -1,8 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
+import '../../../../core/failure.dart';
+import '../../../../router/app_router.dart';
 import '../../../../theme/app_colors.dart';
 import '../../../../theme/app_theme.dart';
 import '../../../../theme/app_typography.dart';
+import '../../domain/entities/role.dart';
+import '../../domain/value_objects/email.dart';
+import '../../domain/value_objects/password.dart';
+import '../controllers/auth_controller.dart';
+import '../states/auth_state.dart';
 
 /// Tela de cadastro de novo usuário no estilo Athletic Modernist.
 class SignUpPage extends StatefulWidget {
@@ -32,31 +41,60 @@ class _SignUpPageState extends State<SignUpPage> {
     super.dispose();
   }
 
-  void _onSignUpPressed() {
+  Future<void> _onSignUpPressed(AuthController controller) async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
-    //sem açao por enquanto
+
+    await controller.signUp(
+      fullName: _nameController.text,
+      email: _emailController.text,
+      password: _passwordController.text,
+      role: Role.player,
+    );
+
+    if (!mounted) return;
+
+    if (controller.state case AuthFailed(:final failure)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: AppColors.error,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: AppRadius.slot),
+          content: Row(
+            children: [
+              const Icon(Icons.error_outline_rounded, color: Colors.white),
+              const SizedBox(width: AppSpacing.sm + 4),
+              Expanded(
+                child: Text(
+                  failure.message,
+                  style: AppText.labelLg.copyWith(color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+      controller.dismissError();
+    }
   }
 
   String? _validateName(String? value) {
-    if (value == null || value.trim().isEmpty) {
-      return 'Informe seu nome completo';
+    final trimmed = value?.trim() ?? '';
+    if (trimmed.split(RegExp(r'\s+')).length < 2) {
+      return const InvalidNameFailure().message;
     }
     return null;
   }
 
-  String? _validateEmail(String? value) {
-    if (value == null || value.trim().isEmpty) {
-      return 'Informe seu e-mail';
-    }
-    return null;
-  }
+  String? _validateEmail(String? value) => Email.create(value ?? '').fold(
+        onSuccess: (_) => null,
+        onFailure: (failure) => failure.message,
+      );
 
-  String? _validatePassword(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Informe sua senha';
-    }
-    return null;
-  }
+  String? _validatePassword(String? value) =>
+      Password.create(value ?? '').fold(
+        onSuccess: (_) => null,
+        onFailure: (failure) => failure.message,
+      );
 
   String? _validateConfirmPassword(String? value) {
     if (value == null || value.isEmpty) {
@@ -70,6 +108,9 @@ class _SignUpPageState extends State<SignUpPage> {
 
   @override
   Widget build(BuildContext context) {
+    final controller = context.watch<AuthController>();
+    final isLoading = controller.state is AuthInProgress;
+
     return Scaffold(
       body: SafeArea(
         child: Center(
@@ -143,9 +184,8 @@ class _SignUpPageState extends State<SignUpPage> {
                             style: AppText.bodyMd,
                             decoration: InputDecoration(
                               hintText: 'Mínimo 8 caracteres',
-                              prefixIcon: const Icon(
-                                Icons.lock_outline_rounded,
-                              ),
+                              prefixIcon:
+                                  const Icon(Icons.lock_outline_rounded),
                               suffixIcon: IconButton(
                                 tooltip: _obscurePassword
                                     ? 'Mostrar senha'
@@ -170,12 +210,12 @@ class _SignUpPageState extends State<SignUpPage> {
                             obscureText: _obscureConfirmPassword,
                             textInputAction: TextInputAction.done,
                             style: AppText.bodyMd,
-                            onFieldSubmitted: (_) => _onSignUpPressed(),
+                            onFieldSubmitted: (_) =>
+                                isLoading ? null : _onSignUpPressed(controller),
                             decoration: InputDecoration(
                               hintText: 'Repita sua senha',
-                              prefixIcon: const Icon(
-                                Icons.lock_outline_rounded,
-                              ),
+                              prefixIcon:
+                                  const Icon(Icons.lock_outline_rounded),
                               suffixIcon: IconButton(
                                 tooltip: _obscureConfirmPassword
                                     ? 'Mostrar confirmação de senha'
@@ -195,16 +235,28 @@ class _SignUpPageState extends State<SignUpPage> {
                           ),
                           const SizedBox(height: AppSpacing.lg),
                           FilledButton(
-                            onPressed: _onSignUpPressed,
-                            child: const Text('Criar minha conta'),
+                            onPressed: isLoading
+                                ? null
+                                : () => _onSignUpPressed(controller),
+                            child: isLoading
+                                ? const SizedBox(
+                                    width: 22,
+                                    height: 22,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2.5,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : const Text('Criar minha conta'),
                           ),
                         ],
                       ),
                     ),
                   ),
                   const SizedBox(height: AppSpacing.md),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                  Wrap(
+                    alignment: WrapAlignment.center,
+                    crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
                       Text(
                         'Já tem uma conta?',
@@ -216,6 +268,12 @@ class _SignUpPageState extends State<SignUpPage> {
                         onPressed: () {
                           if (Navigator.of(context).canPop()) {
                             Navigator.of(context).pop();
+                          } else {
+                            try {
+                              context.go(AppRoutes.login);
+                            } catch (_) {
+                              // Context sem GoRouter
+                            }
                           }
                         },
                         child: const Text('Entrar'),
