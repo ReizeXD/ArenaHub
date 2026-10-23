@@ -4,6 +4,7 @@ import 'sport.dart';
 class Court {
   const Court({
     required this.id,
+    required this.ownerId,
     required this.name,
     required this.sport,
     required this.address,
@@ -14,6 +15,7 @@ class Court {
   });
 
   final String id;
+  final String ownerId;
   final String name;
   final Sport sport;
   final String address;
@@ -27,6 +29,28 @@ class Court {
 
   /// Hora em que a quadra fecha (22 = último jogo começa 21:00).
   final int closingHour;
+
+  Court copyWith({
+    String? id,
+    String? ownerId,
+    String? name,
+    Sport? sport,
+    String? address,
+    int? pricePerHourInCents,
+    String? imageUrl,
+    int? openingHour,
+    int? closingHour,
+  }) => Court(
+    id: id ?? this.id,
+    ownerId: ownerId ?? this.ownerId,
+    name: name ?? this.name,
+    sport: sport ?? this.sport,
+    address: address ?? this.address,
+    pricePerHourInCents: pricePerHourInCents ?? this.pricePerHourInCents,
+    imageUrl: imageUrl ?? this.imageUrl,
+    openingHour: openingHour ?? this.openingHour,
+    closingHour: closingHour ?? this.closingHour,
+  );
 
   /// `R$ 120,00` — formatação de moeda no padrão brasileiro.
   String get formattedPrice {
