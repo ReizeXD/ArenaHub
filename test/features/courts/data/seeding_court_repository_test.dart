@@ -15,6 +15,9 @@ class GrowableCourtRepository implements CourtRepository {
   int listCalls = 0;
 
   @override
+  String nextIdentity() => 'court_${courts.length + 1}';
+
+  @override
   Future<Result<List<Court>>> listAll() async {
     listCalls++;
     return Ok(List.of(courts));

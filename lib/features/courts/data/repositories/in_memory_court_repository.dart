@@ -11,6 +11,9 @@ class InMemoryCourtRepository implements CourtRepository {
   final List<Court> _courts;
 
   @override
+  String nextIdentity() => 'court_${DateTime.now().microsecondsSinceEpoch}';
+
+  @override
   Future<Result<List<Court>>> listAll() async => Ok(List.unmodifiable(_courts));
 
   @override

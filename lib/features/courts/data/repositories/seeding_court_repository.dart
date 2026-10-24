@@ -13,6 +13,9 @@ class SeedingCourtRepository implements CourtRepository {
   final Future<Result<void>> Function() _seed;
 
   @override
+  String nextIdentity() => _inner.nextIdentity();
+
+  @override
   Future<Result<List<Court>>> listAll() async {
     final result = await _inner.listAll();
 

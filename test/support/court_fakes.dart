@@ -32,6 +32,9 @@ class FailingCourtRepository implements CourtRepository {
   final Failure failure;
 
   @override
+  String nextIdentity() => 'failing_court_id';
+
+  @override
   Future<Result<List<Court>>> listAll() async => Err(failure);
 
   @override

@@ -20,6 +20,9 @@ class FirestoreCourtRepository implements CourtRepository {
   static const String collection = 'courts';
 
   @override
+  String nextIdentity() => _firestore.collection(collection).doc().id;
+
+  @override
   Future<Result<List<Court>>> listAll() async {
     try {
       final snapshot =
