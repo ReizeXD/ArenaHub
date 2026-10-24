@@ -119,7 +119,7 @@ class Injector {
   ) =>
       switch (mode) {
         AuthMode.local => (
-            const InMemoryCourtRepository(),
+            InMemoryCourtRepository(),
             InMemoryBookingRepository(),
           ),
         AuthMode.firebase => _firestoreCourtRepositories(),

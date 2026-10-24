@@ -5,12 +5,14 @@ class Booking {
     required this.courtId,
     required this.userId,
     required this.start,
+    this.userName = '',
     this.duration = const Duration(hours: 1),
   });
 
   final String id;
   final String courtId;
   final String userId;
+  final String userName;
   final DateTime start;
   final Duration duration;
 
@@ -26,10 +28,7 @@ class Booking {
   }
 
   /// Chave de consulta da agenda: `pajucara|2026-09-28`.
-  static String courtDayKey({
-    required String courtId,
-    required DateTime day,
-  }) {
+  static String courtDayKey({required String courtId, required DateTime day}) {
     final month = day.month.toString().padLeft(2, '0');
     final dayOfMonth = day.day.toString().padLeft(2, '0');
     return '$courtId|${day.year}-$month-$dayOfMonth';

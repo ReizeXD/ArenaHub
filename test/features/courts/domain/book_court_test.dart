@@ -17,8 +17,13 @@ void main() {
     bookCourt = BookCourt(repository, now: () => agora);
   });
 
-  Future<Result<Booking>> reservar(DateTime start) =>
-      bookCourt(court: testCourt, userId: 'usuario-1', start: start);
+  Future<Result<Booking>> reservar(DateTime start, {String userName = ''}) =>
+      bookCourt(
+        court: testCourt,
+        userId: 'usuario-1',
+        start: start,
+        userName: userName,
+      );
 
   test('reserva um horário livre', () async {
     final result = await reservar(DateTime(2026, 9, 28, 11));
@@ -26,6 +31,16 @@ void main() {
     expect(result, isA<Ok<Booking>>());
     expect((result as Ok<Booking>).value.userId, 'usuario-1');
     expect(repository.createCalls, 1);
+  });
+
+  test('persiste o userName do atleta na reserva', () async {
+    final result = await reservar(
+      DateTime(2026, 9, 28, 11),
+      userName: '  Neymar Jr  ',
+    );
+
+    expect(result, isA<Ok<Booking>>());
+    expect((result as Ok<Booking>).value.userName, 'Neymar Jr');
   });
 
   test('o id da reserva é derivado da quadra e do horário', () async {

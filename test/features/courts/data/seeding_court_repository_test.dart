@@ -15,15 +15,42 @@ class GrowableCourtRepository implements CourtRepository {
   int listCalls = 0;
 
   @override
+  String nextIdentity() => 'court_${courts.length + 1}';
+
+  @override
   Future<Result<List<Court>>> listAll() async {
     listCalls++;
     return Ok(List.of(courts));
   }
 
   @override
+  Future<Result<List<Court>>> listByOwner(String ownerId) async =>
+      Ok(courts.where((c) => c.ownerId == ownerId).toList());
+
+  @override
   Future<Result<Court>> findById(String id) async => const Err(
         CourtNotFoundFailure(),
       );
+
+  @override
+  Future<Result<Court>> create(Court court) async {
+    courts.add(court);
+    return Ok(court);
+  }
+
+  @override
+  Future<Result<Court>> update(Court court) async {
+    final index = courts.indexWhere((c) => c.id == court.id);
+    if (index == -1) return const Err(CourtNotFoundFailure());
+    courts[index] = court;
+    return Ok(court);
+  }
+
+  @override
+  Future<Result<void>> delete(String id) async {
+    courts.removeWhere((c) => c.id == id);
+    return const Ok(null);
+  }
 }
 
 void main() {
@@ -48,7 +75,7 @@ void main() {
     var seedCalls = 0;
 
     final repository = SeedingCourtRepository(
-      const InMemoryCourtRepository(),
+      InMemoryCourtRepository(),
       () async {
         seedCalls++;
         return const Ok<void>(null);
@@ -74,7 +101,7 @@ void main() {
   test('busca por id passa direto, sem semear', () async {
     var seedCalls = 0;
     final repository = SeedingCourtRepository(
-      const InMemoryCourtRepository(),
+      InMemoryCourtRepository(),
       () async {
         seedCalls++;
         return const Ok<void>(null);

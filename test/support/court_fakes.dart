@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:arenahub/core/failure.dart';
 import 'package:arenahub/core/result.dart';
 import 'package:arenahub/features/courts/domain/entities/booking.dart';
@@ -6,6 +8,7 @@ import 'package:arenahub/features/courts/domain/entities/sport.dart';
 import 'package:arenahub/features/courts/domain/repositories/booking_repository.dart';
 import 'package:arenahub/features/courts/domain/repositories/court_repository.dart';
 import 'package:arenahub/features/courts/data/repositories/in_memory_court_repository.dart';
+import 'package:arenahub/features/courts/domain/services/court_image_storage.dart';
 import 'package:arenahub/features/courts/domain/usecases/book_court.dart';
 import 'package:arenahub/features/courts/domain/usecases/get_court_availability.dart';
 import 'package:arenahub/features/courts/domain/usecases/list_courts.dart';
@@ -17,6 +20,7 @@ import 'package:arenahub/features/courts/presentation/controllers/my_bookings_co
 /// Quadra de teste: abre 8h, fecha 12h — quatro horários, fácil de conferir.
 const Court testCourt = Court(
   id: 'quadra-1',
+  ownerId: 'owner-1',
   name: 'Arena de Teste',
   sport: Sport.futsal,
   address: 'Rua de Teste, 100',
@@ -32,10 +36,46 @@ class FailingCourtRepository implements CourtRepository {
   final Failure failure;
 
   @override
+  String nextIdentity() => 'failing_court_id';
+
+  @override
   Future<Result<List<Court>>> listAll() async => Err(failure);
 
   @override
+  Future<Result<List<Court>>> listByOwner(String ownerId) async => Err(failure);
+
+  @override
   Future<Result<Court>> findById(String id) async => Err(failure);
+
+  @override
+  Future<Result<Court>> create(Court court) async => Err(failure);
+
+  @override
+  Future<Result<Court>> update(Court court) async => Err(failure);
+
+  @override
+  Future<Result<void>> delete(String id) async => Err(failure);
+}
+
+/// Dublê de `CourtImageStorage` para testes de criação e atualização.
+class FakeCourtImageStorage implements CourtImageStorage {
+  FakeCourtImageStorage({this.urlToReturn = 'https://fake.url/image.jpg'});
+
+  final String urlToReturn;
+  Failure? failure;
+  int uploadCalls = 0;
+
+  @override
+  Future<Result<String>> upload({
+    required String ownerId,
+    required String courtId,
+    required Uint8List bytes,
+    String mimeType = 'image/jpeg',
+  }) async {
+    uploadCalls++;
+    if (failure != null) return Err(failure!);
+    return Ok(urlToReturn);
+  }
 }
 
 /// `BookingRepository` em memória, com contadores para os testes.
@@ -80,7 +120,7 @@ class FakeBookingRepository implements BookingRepository {
 
 /// Monta um `CourtsController` sobre o catálogo em memória (ou um dublê).
 CourtsController courtsControllerWith({CourtRepository? repository}) =>
-    CourtsController(ListCourts(repository ?? const InMemoryCourtRepository()));
+    CourtsController(ListCourts(repository ?? InMemoryCourtRepository()));
 
 /// Monta um `BookingController` com relógio fixo, como o composition root faz
 /// com as implementações reais.
@@ -105,7 +145,7 @@ MyBookingsController myBookingsControllerWith({
     MyBookingsController(
       ListMyBookings(
         bookings ?? FakeBookingRepository(),
-        courts ?? const InMemoryCourtRepository(),
+        courts ?? InMemoryCourtRepository(),
         now: now,
       ),
     );
