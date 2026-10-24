@@ -1,10 +1,13 @@
+import 'package:arenahub/core/failure.dart';
+import 'package:arenahub/core/result.dart';
+
 import 'sport.dart';
 
 /// Uma quadra disponível para aluguel.
 class Court {
   const Court({
     required this.id,
-    required this.ownerId,
+    this.ownerId = '',
     required this.name,
     required this.sport,
     required this.address,
@@ -65,4 +68,42 @@ class Court {
 
   @override
   int get hashCode => id.hashCode;
+
+  /// Verifica se a quadra pertence a [userId].
+  bool isOwnedBy(String userId) => ownerId.isNotEmpty && ownerId == userId;
+
+  /// Constrói uma [Court] garantindo todas as invariantes de negócio.
+  static Result<Court> validated({
+    required String id,
+    required String ownerId,
+    required String name,
+    required Sport sport,
+    required String address,
+    required int pricePerHourInCents,
+    String imageUrl = '',
+    int openingHour = 8,
+    int closingHour = 22,
+  }) {
+    final trimmedName = name.trim();
+    if (trimmedName.isEmpty) return const Err(InvalidCourtNameFailure());
+    final trimmedAddress = address.trim();
+    if (trimmedAddress.isEmpty) return const Err(InvalidCourtAddressFailure());
+    if (pricePerHourInCents <= 0) return const Err(InvalidCourtPriceFailure());
+    if (openingHour < 0 || closingHour > 24 || openingHour >= closingHour) {
+      return const Err(InvalidOperatingHoursFailure());
+    }
+    return Ok(
+      Court(
+        id: id,
+        ownerId: ownerId,
+        name: trimmedName,
+        sport: sport,
+        address: trimmedAddress,
+        pricePerHourInCents: pricePerHourInCents,
+        imageUrl: imageUrl.trim(),
+        openingHour: openingHour,
+        closingHour: closingHour,
+      ),
+    );
+  }
 }

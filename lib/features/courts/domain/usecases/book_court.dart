@@ -16,6 +16,7 @@ class BookCourt {
     required Court court,
     required String userId,
     required DateTime start,
+    String userName = '',
   }) async {
     if (start.isBefore(_now())) {
       return const Err(SlotInThePastFailure());
@@ -41,6 +42,7 @@ class BookCourt {
         id: Booking.slotId(courtId: court.id, start: start),
         courtId: court.id,
         userId: userId,
+        userName: userName.trim(),
         start: start,
       ),
     );

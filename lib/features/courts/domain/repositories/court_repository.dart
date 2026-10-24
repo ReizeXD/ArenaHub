@@ -1,7 +1,7 @@
 import '../../../../core/result.dart';
 import '../entities/court.dart';
 
-/// Port de leitura das quadras.
+/// Port de leitura e escrita das quadras.
 abstract interface class CourtRepository {
   /// Gera o próximo identificador único válido para uma quadra de acordo
   /// com a infraestrutura/persistência subjacente.
@@ -16,4 +16,6 @@ abstract interface class CourtRepository {
   Future<Result<Court>> create(Court court);
 
   Future<Result<Court>> update(Court court);
+
+  Future<Result<void>> delete(String id);
 }

@@ -29,5 +29,18 @@ class SeedingCourtRepository implements CourtRepository {
   }
 
   @override
+  Future<Result<List<Court>>> listByOwner(String ownerId) =>
+      _inner.listByOwner(ownerId);
+
+  @override
   Future<Result<Court>> findById(String id) => _inner.findById(id);
+
+  @override
+  Future<Result<Court>> create(Court court) => _inner.create(court);
+
+  @override
+  Future<Result<Court>> update(Court court) => _inner.update(court);
+
+  @override
+  Future<Result<void>> delete(String id) => _inner.delete(id);
 }

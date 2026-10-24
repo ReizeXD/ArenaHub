@@ -23,7 +23,7 @@ void main() {
     ]);
     final usecase = ListMyBookings(
       bookings,
-      const InMemoryCourtRepository(),
+      InMemoryCourtRepository(),
       now: () => agora,
     );
 
@@ -43,7 +43,7 @@ void main() {
     ]);
     final usecase = ListMyBookings(
       bookings,
-      const InMemoryCourtRepository(),
+      InMemoryCourtRepository(),
       now: () => agora,
     );
 
@@ -59,7 +59,7 @@ void main() {
     ]);
     final usecase = ListMyBookings(
       bookings,
-      const InMemoryCourtRepository(),
+      InMemoryCourtRepository(),
       now: () => agora,
     );
 
@@ -76,7 +76,7 @@ void main() {
     ]);
     final usecase = ListMyBookings(
       bookings,
-      const InMemoryCourtRepository(),
+      InMemoryCourtRepository(),
       now: () => agora,
     );
 
@@ -91,7 +91,7 @@ void main() {
     ]);
     final usecase = ListMyBookings(
       bookings,
-      const InMemoryCourtRepository(),
+      InMemoryCourtRepository(),
       now: () => agora,
     );
 

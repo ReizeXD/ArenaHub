@@ -9,7 +9,11 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('InMemoryCourtRepository', () {
-    const repository = InMemoryCourtRepository();
+    late InMemoryCourtRepository repository;
+
+    setUp(() {
+      repository = InMemoryCourtRepository();
+    });
 
     test('lista o catálogo semeado', () async {
       final result = await repository.listAll();
