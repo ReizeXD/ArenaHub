@@ -11,6 +11,7 @@ import '../states/my_courts_state.dart';
 import '../widgets/delete_court_dialog.dart';
 import '../widgets/owner_court_card.dart';
 import 'court_form_page.dart';
+import 'owner_court_agenda_page.dart';
 
 /// Aba/Tela de gerenciamento de quadras do dono da arena.
 ///
@@ -49,6 +50,21 @@ class _MyCourtsPageState extends State<MyCourtsPage> {
   MyCourtsController _resolveController() {
     if (widget.controller != null) return widget.controller!;
     return context.read<MyCourtsController>();
+  }
+
+  void _openCourtAgenda(Court court) {
+    if (widget.onViewCourtAgenda != null) {
+      widget.onViewCourtAgenda!(court);
+      return;
+    }
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => OwnerCourtAgendaPage(
+          court: court,
+          ownerId: widget.ownerId,
+        ),
+      ),
+    );
   }
 
   Future<void> _openAddCourt(MyCourtsController controller) async {
@@ -233,7 +249,7 @@ class _MyCourtsPageState extends State<MyCourtsPage> {
               for (final court in courts) ...[
                 OwnerCourtCard(
                   court: court,
-                  onViewAgenda: () => widget.onViewCourtAgenda?.call(court),
+                  onViewAgenda: () => _openCourtAgenda(court),
                   onEdit: () => _openEditCourt(controller, court),
                   onDelete: () => _confirmAndDeleteCourt(controller, court),
                 ),
