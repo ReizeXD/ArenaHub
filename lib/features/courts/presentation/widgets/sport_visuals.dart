@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 
 import '../../../../theme/app_colors.dart';
@@ -32,22 +35,21 @@ extension SportVisuals on Sport {
       };
 }
 
-/// Foto da quadra, com o gradiente da modalidade como plano B.
-///
-/// A imagem vem da rede, então pode demorar ou falhar. Em vez de mostrar
-/// ícone de imagem quebrada, cai no gradiente — que é o que o app usava antes
-/// de existir foto. Enquanto carrega, o gradiente também aparece.
+/// Foto da quadra, com suporte a URLs remotas (HTTP), Data URLs (base64)
+/// e bytes em memória, tendo o gradiente da modalidade como plano B.
 class CourtImage extends StatelessWidget {
   const CourtImage({
     super.key,
     required this.court,
     this.height = 180,
     this.borderRadius,
+    this.memoryBytes,
   });
 
   final Court court;
   final double height;
   final BorderRadius? borderRadius;
+  final Uint8List? memoryBytes;
 
   @override
   Widget build(BuildContext context) {
@@ -58,16 +60,47 @@ class CourtImage extends StatelessWidget {
       child: SizedBox(
         height: height,
         width: double.infinity,
-        child: court.imageUrl.isEmpty
-            ? _Gradient(sport: court.sport)
-            : Image.network(
-                court.imageUrl,
-                fit: BoxFit.cover,
-                errorBuilder: (_, _, _) => _Gradient(sport: court.sport),
-                loadingBuilder: (context, child, progress) =>
-                    progress == null ? child : _Gradient(sport: court.sport),
-              ),
+        child: _buildImage(),
       ),
+    );
+  }
+
+  Widget _buildImage() {
+    if (memoryBytes != null && memoryBytes!.isNotEmpty) {
+      return Image.memory(
+        memoryBytes!,
+        fit: BoxFit.cover,
+        errorBuilder: (_, _, _) => _Gradient(sport: court.sport),
+      );
+    }
+
+    final url = court.imageUrl.trim();
+    if (url.isEmpty) {
+      return _Gradient(sport: court.sport);
+    }
+
+    if (url.startsWith('data:')) {
+      try {
+        final commaIndex = url.indexOf(',');
+        final base64String =
+            commaIndex != -1 ? url.substring(commaIndex + 1) : url;
+        final bytes = base64Decode(base64String);
+        return Image.memory(
+          bytes,
+          fit: BoxFit.cover,
+          errorBuilder: (_, _, _) => _Gradient(sport: court.sport),
+        );
+      } catch (_) {
+        return _Gradient(sport: court.sport);
+      }
+    }
+
+    return Image.network(
+      url,
+      fit: BoxFit.cover,
+      errorBuilder: (_, _, _) => _Gradient(sport: court.sport),
+      loadingBuilder: (context, child, progress) =>
+          progress == null ? child : _Gradient(sport: court.sport),
     );
   }
 }
