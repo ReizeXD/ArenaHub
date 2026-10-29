@@ -113,4 +113,37 @@ void main() {
     expect((result as Ok<Court>).value.name, 'Quadra Pajuçara');
     expect(seedCalls, 0);
   });
+
+  test('listByOwner, create, update e delete delegam ao inner sem semear',
+      () async {
+    var seedCalls = 0;
+    final inner = InMemoryCourtRepository();
+    final repository = SeedingCourtRepository(
+      inner,
+      () async {
+        seedCalls++;
+        return const Ok<void>(null);
+      },
+    );
+
+    final quadra = testCourt.copyWith(id: 'q-seed', ownerId: 'dono-s');
+
+    final createResult = await repository.create(quadra);
+    expect(createResult, isA<Ok<Court>>());
+    expect(seedCalls, 0);
+
+    final byOwner = await repository.listByOwner('dono-s');
+    expect((byOwner as Ok<List<Court>>).value, hasLength(1));
+    expect(seedCalls, 0);
+
+    await repository.update(quadra.copyWith(name: 'Quadra Delegada 2'));
+    final find = await repository.findById('q-seed');
+    expect((find as Ok<Court>).value.name, 'Quadra Delegada 2');
+    expect(seedCalls, 0);
+
+    await repository.delete('q-seed');
+    final afterDelete = await repository.findById('q-seed');
+    expect(afterDelete, isA<Err<Court>>());
+    expect(seedCalls, 0);
+  });
 }
