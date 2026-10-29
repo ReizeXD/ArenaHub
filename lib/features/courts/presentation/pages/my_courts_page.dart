@@ -12,7 +12,7 @@ import '../widgets/delete_court_dialog.dart';
 import '../widgets/owner_court_card.dart';
 import 'court_form_page.dart';
 
-/// Aba/Tela de gerenciamento de quadras do dono da arena (#47).
+/// Aba/Tela de gerenciamento de quadras do dono da arena.
 ///
 /// Exibe listagem com cards rápidos, estado vazio amigável convidando ao cadastro,
 /// atualização via pull-to-refresh e modais de edição e exclusão.

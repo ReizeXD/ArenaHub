@@ -6,7 +6,7 @@ import '../../domain/entities/owner_slot_info.dart';
 import '../../domain/usecases/get_owner_court_agenda.dart';
 import '../states/owner_agenda_state.dart';
 
-/// Controlador da agenda e métricas da quadra na visão do proprietário (#51).
+/// Controlador da agenda e métricas da quadra na visão do proprietário.
 ///
 /// Gerencia a busca de slots diários através de [GetOwnerCourtAgenda],
 /// a navegação entre datas e o cálculo dinâmico de métricas (reservas e faturamento).

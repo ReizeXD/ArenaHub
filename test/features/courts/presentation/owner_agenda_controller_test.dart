@@ -55,7 +55,7 @@ void main() {
     );
   });
 
-  group('OwnerAgendaController & OwnerAgendaState (#51)', () {
+  group('OwnerAgendaController & OwnerAgendaState', () {
     test('estado inicial começa com OwnerAgendaLoading e métricas zeradas', () {
       expect(controller.state, isA<OwnerAgendaLoading>());
       expect(controller.slots, isEmpty);
@@ -90,7 +90,7 @@ void main() {
       expect(controller.revenueInCents, 24000);
       expect(controller.formattedRevenue, 'R\$ 240,00');
 
-      // Detalhes dos slots e identificação dos atletas (#54)
+      // Detalhes dos slots e identificação dos atletas
       final slot8 = state.slots[0];
       expect(slot8.start.hour, 8);
       expect(slot8.isBooked, isFalse);

@@ -12,7 +12,7 @@ import '../controllers/my_courts_controller.dart';
 import '../widgets/court_image_picker_field.dart';
 import '../widgets/sport_visuals.dart';
 
-/// Formulário para cadastro e edição de quadras esportivas do proprietário (#43, #44).
+/// Formulário para cadastro e edição de quadras esportivas do proprietário.
 class CourtFormPage extends StatefulWidget {
   const CourtFormPage({
     super.key,
@@ -24,8 +24,8 @@ class CourtFormPage extends StatefulWidget {
   /// Identificador do proprietário da quadra.
   final String ownerId;
 
-  /// Se informado, a página opera em modo de edição (#44).
-  /// Se nulo, opera em modo de criação (#43).
+  /// Se informado, a página opera em modo de edição.
+  /// Se nulo, opera em modo de criação.
   final Court? courtToEdit;
 
   /// Controlador opcional para testes ou injeção direta.
@@ -242,7 +242,7 @@ class _CourtFormPageState extends State<CourtFormPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // Campo de Foto (#41)
+                    // Campo de Foto
                     CourtImagePickerField(
                       initialImageUrl: widget.courtToEdit?.imageUrl,
                       sport: _selectedSport,

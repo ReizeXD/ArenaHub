@@ -2,7 +2,7 @@ import '../../../../core/failure.dart';
 import '../../domain/entities/court.dart';
 import '../../domain/entities/owner_slot_info.dart';
 
-/// Estados da agenda e grade de horários da quadra vista pelo dono (#51).
+/// Estados da agenda e grade de horários da quadra vista pelo dono.
 sealed class OwnerAgendaState {
   const OwnerAgendaState();
 }

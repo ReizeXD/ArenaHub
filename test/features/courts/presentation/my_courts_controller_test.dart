@@ -52,7 +52,7 @@ void main() {
     );
   });
 
-  group('MyCourtsController — ciclo de carregamento (#39)', () {
+  group('MyCourtsController — ciclo de carregamento', () {
     test('começa com estado MyCourtsLoading e lista vazia', () {
       expect(controller.state, isA<MyCourtsLoading>());
       expect(controller.courts, isEmpty);
@@ -82,7 +82,7 @@ void main() {
     });
   });
 
-  group('MyCourtsController — operações de mutação (#39, #40)', () {
+  group('MyCourtsController — operações de mutação', () {
     test('create cadastra nova quadra, recarrega lista e dispara onCourtMutated',
         () async {
       await controller.load('dono-1');
@@ -190,7 +190,7 @@ void main() {
     });
   });
 
-  group('Sincronização entre Controllers (#40)', () {
+  group('Sincronização entre Controllers', () {
     test('alterações em MyCourtsController sincronizam CourtsController',
         () async {
       final courtsController = CourtsController(ListCourts(repository));

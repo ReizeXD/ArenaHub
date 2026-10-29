@@ -67,7 +67,7 @@ void main() {
     );
   }
 
-  group('MyCourtsPage (#47, #49)', () {
+  group('MyCourtsPage', () {
     testWidgets('exibe loading indicador no estado inicial MyCourtsLoading',
         (tester) async {
       final unstartedController = MyCourtsController(
@@ -151,7 +151,7 @@ void main() {
       expect(find.text('7h–23h'), findsOneWidget);
     });
 
-    testWidgets('ao clicar em Editar, abre CourtFormPage com os dados da quadra (#45)',
+    testWidgets('ao clicar em Editar, abre CourtFormPage com os dados da quadra',
         (tester) async {
       await tester.pumpWidget(buildSubject());
       await tester.pumpAndSettle();
@@ -166,7 +166,7 @@ void main() {
       expect(find.text('Quadra Central de Beach Tennis'), findsOneWidget);
     });
 
-    testWidgets('ao clicar em Ver Agenda, invoca callback com a quadra (#45)',
+    testWidgets('ao clicar em Ver Agenda, invoca callback com a quadra',
         (tester) async {
       Court? clickedCourt;
 
@@ -186,7 +186,7 @@ void main() {
       expect(clickedCourt?.id, court1.id);
     });
 
-    testWidgets('fluxo de exclusão com confirmação e feedback (#46)',
+    testWidgets('fluxo de exclusão com confirmação e feedback',
         (tester) async {
       await tester.pumpWidget(buildSubject());
       await tester.pumpAndSettle();
@@ -197,7 +197,7 @@ void main() {
       await tester.tap(deleteButton);
       await tester.pumpAndSettle();
 
-      // Confere se o modal de confirmação abriu (#46)
+      // Confere se o modal de confirmação abriu
       expect(find.text('Excluir Quadra'), findsOneWidget);
       expect(
         find.textContaining('Tem certeza de que deseja excluir a quadra "${court1.name}"?'),
