@@ -1,0 +1,28 @@
+rules_version = '2';
+
+// Regras de acesso do Cloud Storage para o ArenaHub.
+//
+// Publique com:  firebase deploy --only storage
+// Ou pelo console: Storage > aba Regras > colar > Publicar.
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // Fotos das quadras organizadas por dono: courts/{ownerId}/{fileName}
+    match /courts/{ownerId}/{allPaths=**} {
+      // Qualquer usuário autenticado pode ver as fotos das quadras no catálogo
+      allow read: if request.auth != null;
+
+      // Apenas o dono pode fazer upload ou alterar fotos na sua própria pasta.
+      // Limite de segurança de 5MB por arquivo e apenas tipos MIME de imagem.
+      allow write: if request.auth != null
+                   && request.auth.uid == ownerId
+                   && request.resource.size < 5 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*');
+    }
+
+    // Qualquer outro caminho bloqueado por padrão
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
