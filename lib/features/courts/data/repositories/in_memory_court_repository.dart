@@ -12,9 +12,11 @@ class InMemoryCourtRepository implements CourtRepository {
             : List<Court>.of(demoCourts);
 
   final List<Court> _courts;
+  int _nextId = 0;
 
   @override
-  String nextIdentity() => 'court_${DateTime.now().microsecondsSinceEpoch}';
+  String nextIdentity() =>
+      'court_${DateTime.now().microsecondsSinceEpoch}_${++_nextId}';
 
   @override
   Future<Result<List<Court>>> listAll() async => Ok(List.unmodifiable(_courts));
