@@ -70,6 +70,14 @@ class FirebaseAuthRepository implements AuthRepository {
     }
   }
 
+  @override
+  Future<Result<AuthSession>> signInWithGoogle() =>
+      throw UnimplementedError('signInWithGoogle sera implementado na camada de dados');
+
+  @override
+  Future<Result<AuthSession>> signInWithApple() =>
+      throw UnimplementedError('signInWithApple sera implementado na camada de dados');
+
   Future<AuthSession> _sessionFor(
     fb.User firebaseUser, {
     UserProfile? profile,

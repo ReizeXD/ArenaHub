@@ -83,3 +83,22 @@ final class ImageUploadFailure extends Failure {
     super.message = 'Não foi possível enviar a foto da quadra.',
   ]);
 }
+
+final class OAuthCancelledFailure extends Failure {
+  const OAuthCancelledFailure([
+    super.message = 'Autenticação cancelada pelo usuário.',
+  ]);
+}
+
+final class OAuthNetworkFailure extends Failure {
+  const OAuthNetworkFailure([
+    super.message = 'Falha de comunicação com o serviço de autenticação.',
+  ]);
+}
+
+final class OAuthAccountCollisionFailure extends Failure {
+  const OAuthAccountCollisionFailure([
+    super.message =
+        'Já existe uma conta cadastrada com este e-mail através de outro método.',
+  ]);
+}

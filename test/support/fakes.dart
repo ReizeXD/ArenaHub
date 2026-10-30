@@ -27,6 +27,8 @@ class FakeAuthRepository implements AuthRepository {
 
   int signInCalls = 0;
   int signUpCalls = 0;
+  int signInWithGoogleCalls = 0;
+  int signInWithAppleCalls = 0;
   Email? lastEmail;
 
   @override
@@ -49,6 +51,34 @@ class FakeAuthRepository implements AuthRepository {
     final error = failure;
     if (error != null) return Err(error);
     return Ok(sessionFor(data.email.value, fullName: data.fullName));
+  }
+
+  @override
+  Future<Result<AuthSession>> signInWithGoogle() async {
+    signInWithGoogleCalls++;
+
+    final error = failure;
+    if (error != null) return Err(error);
+    return Ok(
+      sessionFor(
+        'atleta.google@arenahub.com',
+        fullName: 'Atleta Google',
+      ),
+    );
+  }
+
+  @override
+  Future<Result<AuthSession>> signInWithApple() async {
+    signInWithAppleCalls++;
+
+    final error = failure;
+    if (error != null) return Err(error);
+    return Ok(
+      sessionFor(
+        'atleta.apple@arenahub.com',
+        fullName: 'Atleta Apple',
+      ),
+    );
   }
 
   static AuthSession sessionFor(

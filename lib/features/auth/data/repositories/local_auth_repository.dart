@@ -67,6 +67,14 @@ class LocalAuthRepository implements AuthRepository {
     return Ok(_startSession(user));
   }
 
+  @override
+  Future<Result<AuthSession>> signInWithGoogle() =>
+      throw UnimplementedError('signInWithGoogle sera implementado na camada de dados');
+
+  @override
+  Future<Result<AuthSession>> signInWithApple() =>
+      throw UnimplementedError('signInWithApple sera implementado na camada de dados');
+
   AuthSession _startSession(User user) {
     final now = DateTime.now();
     return AuthSession(
