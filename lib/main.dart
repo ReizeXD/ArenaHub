@@ -60,6 +60,7 @@ class _ArenaHubAppState extends State<ArenaHubApp> {
   late final GoRouter _router = buildAppRouter(
     auth: widget.authController,
     courts: widget.courtsController,
+    myCourts: widget.myCourtsController,
   );
 
   @override
