@@ -8,6 +8,9 @@ import 'features/auth/presentation/controllers/auth_controller.dart';
 import 'features/courts/presentation/controllers/booking_controller.dart';
 import 'features/courts/presentation/controllers/courts_controller.dart';
 import 'features/courts/presentation/controllers/my_bookings_controller.dart';
+import 'features/courts/presentation/controllers/my_courts_controller.dart';
+import 'features/courts/presentation/controllers/owner_agenda_controller.dart';
+import 'features/profile/presentation/controllers/app_mode_controller.dart';
 import 'router/app_router.dart';
 import 'theme/app_theme.dart';
 
@@ -26,6 +29,8 @@ Future<void> main() async {
       courtsController: injector.courtsController,
       bookingController: injector.bookingController,
       myBookingsController: injector.myBookingsController,
+      myCourtsController: injector.myCourtsController,
+      ownerAgendaController: injector.ownerAgendaController,
     ),
   );
 }
@@ -37,25 +42,38 @@ class ArenaHubApp extends StatefulWidget {
     required this.courtsController,
     required this.bookingController,
     required this.myBookingsController,
+    this.myCourtsController,
+    this.ownerAgendaController,
+    this.appModeController,
   });
 
   final AuthController authController;
   final CourtsController courtsController;
   final BookingController bookingController;
   final MyBookingsController myBookingsController;
+  final MyCourtsController? myCourtsController;
+  final OwnerAgendaController? ownerAgendaController;
+  final AppModeController? appModeController;
 
   @override
   State<ArenaHubApp> createState() => _ArenaHubAppState();
 }
 
 class _ArenaHubAppState extends State<ArenaHubApp> {
+  late final AppModeController _appModeController =
+      widget.appModeController ?? AppModeController();
+
   late final GoRouter _router = buildAppRouter(
     auth: widget.authController,
     courts: widget.courtsController,
+    myCourts: widget.myCourtsController,
   );
 
   @override
   void dispose() {
+    if (widget.appModeController == null) {
+      _appModeController.dispose();
+    }
     _router.dispose();
     super.dispose();
   }
@@ -76,6 +94,17 @@ class _ArenaHubAppState extends State<ArenaHubApp> {
         ChangeNotifierProvider<MyBookingsController>.value(
           value: widget.myBookingsController,
         ),
+        ChangeNotifierProvider<AppModeController>.value(
+          value: _appModeController,
+        ),
+        if (widget.myCourtsController != null)
+          ChangeNotifierProvider<MyCourtsController>.value(
+            value: widget.myCourtsController!,
+          ),
+        if (widget.ownerAgendaController != null)
+          ChangeNotifierProvider<OwnerAgendaController>.value(
+            value: widget.ownerAgendaController!,
+          ),
       ],
       child: MaterialApp.router(
         title: 'ArenaHub',

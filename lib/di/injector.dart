@@ -26,15 +26,25 @@ import '../features/courts/data/repositories/in_memory_booking_repository.dart';
 import '../features/courts/data/repositories/in_memory_court_repository.dart';
 import '../features/courts/data/repositories/seeding_court_repository.dart';
 import '../features/courts/data/seed/firestore_court_seeder.dart';
+import '../features/courts/data/services/firebase_court_image_storage.dart';
+import '../features/courts/data/services/memory_court_image_storage.dart';
 import '../features/courts/domain/repositories/booking_repository.dart';
 import '../features/courts/domain/repositories/court_repository.dart';
+import '../features/courts/domain/services/court_image_storage.dart';
 import '../features/courts/domain/usecases/book_court.dart';
+import '../features/courts/domain/usecases/create_court.dart';
+import '../features/courts/domain/usecases/delete_court.dart';
 import '../features/courts/domain/usecases/get_court_availability.dart';
+import '../features/courts/domain/usecases/get_owner_court_agenda.dart';
 import '../features/courts/domain/usecases/list_courts.dart';
 import '../features/courts/domain/usecases/list_my_bookings.dart';
+import '../features/courts/domain/usecases/list_my_courts.dart';
+import '../features/courts/domain/usecases/update_court.dart';
 import '../features/courts/presentation/controllers/booking_controller.dart';
 import '../features/courts/presentation/controllers/courts_controller.dart';
 import '../features/courts/presentation/controllers/my_bookings_controller.dart';
+import '../features/courts/presentation/controllers/my_courts_controller.dart';
+import '../features/courts/presentation/controllers/owner_agenda_controller.dart';
 import '../firebase_options.dart';
 import 'auth_mode.dart';
 
@@ -45,14 +55,24 @@ class Injector {
     this.courtsController,
     this.bookingController,
     this.myBookingsController,
+    this.myCourtsController,
+    this.ownerAgendaController,
+    this.courtImageStorage,
   );
 
   final AuthController authController;
   final CourtsController courtsController;
   final BookingController bookingController;
   final MyBookingsController myBookingsController;
+  final MyCourtsController myCourtsController;
+  final OwnerAgendaController ownerAgendaController;
+  final CourtImageStorage courtImageStorage;
 
-  static Future<Injector> bootstrap({AuthMode mode = AuthMode.local}) async {
+  static Future<Injector> bootstrap({
+    AuthMode mode = AuthMode.local,
+    UserDataSource? userDataSource,
+    CourtImageStorage? imageStorage,
+  }) async {
     if (mode == AuthMode.firebase) {
       await Firebase.initializeApp(
         options: DefaultFirebaseOptions.currentPlatform,
@@ -62,7 +82,8 @@ class Injector {
     final preferences = await SharedPreferences.getInstance();
     final SessionStorage sessionStorage = PrefsSessionStorage(preferences);
 
-    final AuthRepository authRepository = await _buildAuthRepository(mode);
+    final AuthRepository authRepository =
+        await _buildAuthRepository(mode, userDataSource: userDataSource);
 
     final controller = AuthController(
       SignIn(authRepository, sessionStorage),
@@ -75,37 +96,64 @@ class Injector {
     final (CourtRepository courts, BookingRepository bookings) =
         _buildCourtRepositories(mode);
 
+    final CourtImageStorage storage =
+        imageStorage ?? _buildCourtImageStorage(mode);
+
+    final courtsController = CourtsController(ListCourts(courts));
+
+    final myCourtsController = MyCourtsController(
+      listMyCourts: ListMyCourts(courts),
+      createCourt: CreateCourt(courts, storage),
+      updateCourt: UpdateCourt(courts, storage),
+      deleteCourt: DeleteCourt(courts),
+      onCourtMutated: () async => courtsController.load(),
+    );
+
+    final ownerAgendaController = OwnerAgendaController(
+      GetOwnerCourtAgenda(bookings),
+    );
+
     return Injector._(
       controller,
-      CourtsController(ListCourts(courts)),
+      courtsController,
       BookingController(
         GetCourtAvailability(bookings),
         BookCourt(bookings),
       ),
       MyBookingsController(ListMyBookings(bookings, courts)),
+      myCourtsController,
+      ownerAgendaController,
+      storage,
     );
   }
 
   // --- autenticação ---------------------------------------------------
 
-  static Future<AuthRepository> _buildAuthRepository(AuthMode mode) async =>
+  static Future<AuthRepository> _buildAuthRepository(
+    AuthMode mode, {
+    UserDataSource? userDataSource,
+  }) async =>
       switch (mode) {
-        AuthMode.local => _buildLocalAuthRepository(),
+        AuthMode.local =>
+          _buildLocalAuthRepository(userDataSource: userDataSource),
         AuthMode.firebase => FirebaseAuthRepository(
             fb.FirebaseAuth.instance,
             FirestoreUserProfileDataSource(FirebaseFirestore.instance),
           ),
       };
 
-  static Future<AuthRepository> _buildLocalAuthRepository() async {
+  static Future<AuthRepository> _buildLocalAuthRepository({
+    UserDataSource? userDataSource,
+  }) async {
     final passwordHasher = Pbkdf2PasswordHasher();
-    final UserDataSource userDataSource = await _openUserDataSource();
+    final UserDataSource source =
+        userDataSource ?? await _openUserDataSource();
 
     // Contas de demonstração só fazem sentido no modo local; no Firebase os
     // usuários são criados pelo cadastro ou pelo console.
-    await DemoUserSeeder(userDataSource, passwordHasher).seed();
+    await DemoUserSeeder(source, passwordHasher).seed();
 
-    return LocalAuthRepository(userDataSource, passwordHasher);
+    return LocalAuthRepository(source, passwordHasher);
   }
 
   /// SQLite no aparelho; em memória na web, onde o plugin nativo não existe.
@@ -123,6 +171,12 @@ class Injector {
             InMemoryBookingRepository(),
           ),
         AuthMode.firebase => _firestoreCourtRepositories(),
+      };
+
+  static CourtImageStorage _buildCourtImageStorage(AuthMode mode) =>
+      switch (mode) {
+        AuthMode.local => MemoryCourtImageStorage(),
+        AuthMode.firebase => FirebaseCourtImageStorage(),
       };
 
   static (CourtRepository, BookingRepository) _firestoreCourtRepositories() {

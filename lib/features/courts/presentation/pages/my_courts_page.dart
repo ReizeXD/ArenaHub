@@ -231,6 +231,7 @@ class _MyCourtsPageState extends State<MyCourtsPage> {
                     icon: const Icon(Icons.add_rounded, size: 20),
                     label: const Text('Nova Quadra'),
                     style: FilledButton.styleFrom(
+                      minimumSize: const Size(0, 44),
                       padding: const EdgeInsets.symmetric(
                         horizontal: AppSpacing.md,
                         vertical: AppSpacing.sm + 2,

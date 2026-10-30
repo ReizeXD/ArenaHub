@@ -69,18 +69,22 @@ class OwnerSlotTile extends StatelessWidget {
           ),
         ),
         const SizedBox(width: AppSpacing.sm + 4),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(_timeRange, style: AppText.labelLg),
-            const SizedBox(height: 2),
-            Text(
-              slot.isPast ? 'Horário encerrado' : 'Horário livre para reserva',
-              style: AppText.bodySm.copyWith(color: AppColors.onSurfaceVariant),
-            ),
-          ],
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(_timeRange, style: AppText.labelLg),
+              const SizedBox(height: 2),
+              Text(
+                slot.isPast ? 'Horário encerrado' : 'Horário livre para reserva',
+                style: AppText.bodySm.copyWith(color: AppColors.onSurfaceVariant),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
         ),
-        const Spacer(),
+        const SizedBox(width: AppSpacing.sm),
 
         // Status e Preço
         Column(
