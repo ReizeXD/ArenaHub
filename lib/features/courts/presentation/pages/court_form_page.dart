@@ -281,6 +281,7 @@ class _CourtFormPageState extends State<CourtFormPage> {
                     const SizedBox(height: AppSpacing.xs + 2),
                     DropdownButtonFormField<Sport>(
                       key: const Key('court_sport_field'),
+                      isExpanded: true,
                       initialValue: _selectedSport,
                       decoration: const InputDecoration(
                         prefixIcon: Icon(Icons.category_rounded),
@@ -362,6 +363,7 @@ class _CourtFormPageState extends State<CourtFormPage> {
                         Expanded(
                           child: DropdownButtonFormField<int>(
                             key: const Key('court_opening_hour_field'),
+                            isExpanded: true,
                             initialValue: _openingHour,
                             decoration: const InputDecoration(
                               labelText: 'Abertura',
@@ -387,6 +389,7 @@ class _CourtFormPageState extends State<CourtFormPage> {
                         Expanded(
                           child: DropdownButtonFormField<int>(
                             key: const Key('court_closing_hour_field'),
+                            isExpanded: true,
                             initialValue: _closingHour,
                             decoration: const InputDecoration(
                               labelText: 'Fechamento',

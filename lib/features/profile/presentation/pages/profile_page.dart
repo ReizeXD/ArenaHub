@@ -187,11 +187,15 @@ class _ProfilePageState extends State<ProfilePage> {
             color: color,
           ),
           const SizedBox(width: 4),
-          Text(
-            isAthlete ? 'Modo Atleta' : 'Modo Proprietário',
-            style: AppText.labelMd.copyWith(
-              color: color,
-              fontWeight: FontWeight.w600,
+          Flexible(
+            child: Text(
+              isAthlete ? 'Modo Atleta' : 'Modo Proprietário',
+              style: AppText.labelMd.copyWith(
+                color: color,
+                fontWeight: FontWeight.w600,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],
