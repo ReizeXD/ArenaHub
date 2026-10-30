@@ -26,7 +26,7 @@ final class EmailAlreadyInUseFailure extends Failure {
   const EmailAlreadyInUseFailure() : super('Este e-mail já está cadastrado.');
 }
 
-final class NetworkFailure extends Failure {
+base class NetworkFailure extends Failure {
   const NetworkFailure([
     super.message = 'Falha de comunicação. Verifique sua conexão.',
   ]);
@@ -90,7 +90,7 @@ final class OAuthCancelledFailure extends Failure {
   ]);
 }
 
-final class OAuthNetworkFailure extends Failure {
+final class OAuthNetworkFailure extends NetworkFailure {
   const OAuthNetworkFailure([
     super.message = 'Falha de comunicação com o serviço de autenticação.',
   ]);

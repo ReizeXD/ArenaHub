@@ -1,12 +1,12 @@
 import 'package:arenahub/core/failure.dart';
+import 'package:arenahub/core/result.dart';
 import 'package:arenahub/features/auth/data/datasources/user_profile_data_source.dart';
 import 'package:arenahub/features/auth/data/repositories/firebase_auth_repository.dart';
+import 'package:arenahub/features/auth/data/services/social_auth_service.dart';
 import 'package:arenahub/features/auth/domain/entities/role.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// Só a tradução de erro é testada aqui: o resto do adaptador conversa com o
-/// servidor do Firebase e não roda em teste de unidade. Ainda assim, é esta
-/// tradução que garante que a tela reaja igual venha o erro de onde vier.
+/// Testes de tradução de erro e fluxos desacoplados do repositório Firebase.
 void main() {
   test('credencial recusada vira a mesma falha do adaptador local', () {
     for (final code in [
@@ -53,6 +53,63 @@ void main() {
     );
   });
 
+  group('autenticação social com Firebase', () {
+    test('mapeia account-exists-with-different-credential para OAuthAccountCollisionFailure', () {
+      expect(
+        FirebaseAuthRepository.failureFor('account-exists-with-different-credential'),
+        isA<OAuthAccountCollisionFailure>(),
+      );
+    });
+
+    test('signInWithGoogle retorna OAuthCancelledFailure se o serviço retornar null', () async {
+      final repo = FirebaseAuthRepository(
+        null,
+        FakeProfileSource(),
+        googleAuthService: MockGoogleAuthService(payload: null),
+      );
+
+      final result = await repo.signInWithGoogle();
+
+      expect((result as Err).failure, isA<OAuthCancelledFailure>());
+    });
+
+    test('signInWithGoogle retorna OAuthNetworkFailure em caso de exceção de conexão', () async {
+      final repo = FirebaseAuthRepository(
+        null,
+        FakeProfileSource(),
+        googleAuthService: MockGoogleAuthService(throwError: Exception('Falha de rede')),
+      );
+
+      final result = await repo.signInWithGoogle();
+
+      expect((result as Err).failure, isA<OAuthNetworkFailure>());
+    });
+
+    test('signInWithApple retorna OAuthCancelledFailure se o serviço retornar null', () async {
+      final repo = FirebaseAuthRepository(
+        null,
+        FakeProfileSource(),
+        appleAuthService: MockAppleAuthService(payload: null),
+      );
+
+      final result = await repo.signInWithApple();
+
+      expect((result as Err).failure, isA<OAuthCancelledFailure>());
+    });
+
+    test('signInWithApple retorna OAuthNetworkFailure em caso de exceção de conexão', () async {
+      final repo = FirebaseAuthRepository(
+        null,
+        FakeProfileSource(),
+        appleAuthService: MockAppleAuthService(throwError: Exception('Falha de rede')),
+      );
+
+      final result = await repo.signInWithApple();
+
+      expect((result as Err).failure, isA<OAuthNetworkFailure>());
+    });
+  });
+
   group('perfil é opcional', () {
     test('sem Firestore, o login não quebra — fica sem perfil', () async {
       final profile = await FirebaseAuthRepository.profileOrNull(
@@ -90,6 +147,32 @@ void main() {
       expect(profile?.fullName, 'Ana Ribeiro');
     });
   });
+}
+
+/// Dublê de serviço de autenticação Google.
+class MockGoogleAuthService implements GoogleAuthService {
+  MockGoogleAuthService({this.payload, this.throwError});
+  final SocialAuthPayload? payload;
+  final Object? throwError;
+
+  @override
+  Future<SocialAuthPayload?> signIn() async {
+    if (throwError != null) throw throwError!;
+    return payload;
+  }
+}
+
+/// Dublê de serviço de autenticação Apple.
+class MockAppleAuthService implements AppleAuthService {
+  MockAppleAuthService({this.payload, this.throwError});
+  final SocialAuthPayload? payload;
+  final Object? throwError;
+
+  @override
+  Future<SocialAuthPayload?> signIn() async {
+    if (throwError != null) throw throwError!;
+    return payload;
+  }
 }
 
 /// Perfil que sempre falha — simula projeto sem Firestore criado, ou regra

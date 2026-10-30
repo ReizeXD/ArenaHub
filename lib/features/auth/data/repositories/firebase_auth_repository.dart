@@ -10,6 +10,9 @@ import '../../domain/repositories/auth_repository.dart';
 import '../../domain/value_objects/email.dart';
 import '../../domain/value_objects/password.dart';
 import '../datasources/user_profile_data_source.dart';
+import '../services/default_apple_auth_service.dart';
+import '../services/default_google_auth_service.dart';
+import '../services/social_auth_service.dart';
 
 /// Adaptador de autenticação sobre o **Firebase**.
 class FirebaseAuthRepository implements AuthRepository {
@@ -17,13 +20,21 @@ class FirebaseAuthRepository implements AuthRepository {
     this._auth,
     this._profiles, {
     this.sessionDuration = const Duration(days: 7),
+    this.googleAuthService = const DefaultGoogleAuthService(),
+    this.appleAuthService = const DefaultAppleAuthService(),
   });
 
-  final fb.FirebaseAuth _auth;
+  final fb.FirebaseAuth? _auth;
   final UserProfileDataSource _profiles;
 
   /// Por quanto tempo a sessão salva no aparelho continua valendo.
   final Duration sessionDuration;
+
+  /// Serviço de autenticação com o Google.
+  final GoogleAuthService googleAuthService;
+
+  /// Serviço de autenticação com a Apple.
+  final AppleAuthService appleAuthService;
 
   @override
   Future<Result<AuthSession>> signIn({
@@ -31,7 +42,7 @@ class FirebaseAuthRepository implements AuthRepository {
     required Password password,
   }) async {
     try {
-      final credential = await _auth.signInWithEmailAndPassword(
+      final credential = await _auth!.signInWithEmailAndPassword(
         email: email.value,
         password: password.value,
       );
@@ -44,7 +55,7 @@ class FirebaseAuthRepository implements AuthRepository {
   @override
   Future<Result<AuthSession>> signUp(SignUpData data) async {
     try {
-      final credential = await _auth.createUserWithEmailAndPassword(
+      final credential = await _auth!.createUserWithEmailAndPassword(
         email: data.email.value,
         password: data.password.value,
       );
@@ -71,18 +82,79 @@ class FirebaseAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<Result<AuthSession>> signInWithGoogle() =>
-      throw UnimplementedError('signInWithGoogle sera implementado na camada de dados');
+  Future<Result<AuthSession>> signInWithGoogle() async {
+    try {
+      final payload = await googleAuthService.signIn();
+      if (payload == null) {
+        return const Err(OAuthCancelledFailure());
+      }
+
+      final credential = await _auth!.signInWithCredential(payload.credential);
+      final firebaseUser = credential.user!;
+
+      final session = await _ensureProfileAndCreateSession(
+        firebaseUser,
+        payload.fullName,
+      );
+      return Ok(session);
+    } on fb.FirebaseAuthException catch (error) {
+      return Err(failureFor(error.code));
+    } catch (_) {
+      return const Err(OAuthNetworkFailure());
+    }
+  }
 
   @override
-  Future<Result<AuthSession>> signInWithApple() =>
-      throw UnimplementedError('signInWithApple sera implementado na camada de dados');
+  Future<Result<AuthSession>> signInWithApple() async {
+    try {
+      final payload = await appleAuthService.signIn();
+      if (payload == null) {
+        return const Err(OAuthCancelledFailure());
+      }
+
+      final credential = await _auth!.signInWithCredential(payload.credential);
+      final firebaseUser = credential.user!;
+
+      final session = await _ensureProfileAndCreateSession(
+        firebaseUser,
+        payload.fullName,
+      );
+      return Ok(session);
+    } on fb.FirebaseAuthException catch (error) {
+      return Err(failureFor(error.code));
+    } catch (_) {
+      return const Err(OAuthNetworkFailure());
+    }
+  }
+
+  Future<AuthSession> _ensureProfileAndCreateSession(
+    fb.User firebaseUser,
+    String? socialName,
+  ) async {
+    var profile = await profileOrNull(_profiles, firebaseUser.uid);
+    if (profile == null) {
+      final name = socialName ??
+          firebaseUser.displayName ??
+          firebaseUser.email?.split('@').first ??
+          'Atleta';
+      final newProfile = UserProfile(fullName: name, role: Role.player);
+      await saveProfileQuietly(_profiles, firebaseUser.uid, newProfile);
+      if (firebaseUser.displayName == null ||
+          firebaseUser.displayName!.isEmpty) {
+        await firebaseUser.updateDisplayName(name).catchError((_) {});
+      }
+      profile = newProfile;
+    }
+
+    return _sessionFor(firebaseUser, profile: profile);
+  }
 
   Future<AuthSession> _sessionFor(
     fb.User firebaseUser, {
     UserProfile? profile,
   }) async {
-    final resolved = profile ?? await profileOrNull(_profiles, firebaseUser.uid);
+    final resolved =
+        profile ?? await profileOrNull(_profiles, firebaseUser.uid);
     final token = await firebaseUser.getIdTokenResult();
     final issuedAt = token.issuedAtTime ?? DateTime.now();
 
@@ -142,6 +214,8 @@ class FirebaseAuthRepository implements AuthRepository {
           const InvalidCredentialsFailure(),
         'invalid-email' => const InvalidEmailFailure(),
         'email-already-in-use' => const EmailAlreadyInUseFailure(),
+        'account-exists-with-different-credential' =>
+          const OAuthAccountCollisionFailure(),
         'weak-password' => const WeakPasswordFailure(),
         'network-request-failed' || 'too-many-requests' =>
           const NetworkFailure(),
