@@ -9,6 +9,7 @@ import '../../../../theme/app_typography.dart';
 import '../../domain/value_objects/email.dart';
 import '../controllers/auth_controller.dart';
 import '../states/auth_state.dart';
+import '../widgets/social_auth_widgets.dart';
 
 /// Tela de entrada.
 class LoginPage extends StatefulWidget {
@@ -23,6 +24,8 @@ class _LoginPageState extends State<LoginPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
+  bool _isGoogleLoading = false;
+  bool _isAppleLoading = false;
 
   @override
   void dispose() {
@@ -40,7 +43,26 @@ class _LoginPageState extends State<LoginPage> {
     );
 
     if (!mounted) return;
+    _handleAuthFailure(controller);
+  }
 
+  Future<void> _onGoogleLoginPressed(AuthController controller) async {
+    setState(() => _isGoogleLoading = true);
+    await controller.signInWithGoogle();
+    if (!mounted) return;
+    setState(() => _isGoogleLoading = false);
+    _handleAuthFailure(controller);
+  }
+
+  Future<void> _onAppleLoginPressed(AuthController controller) async {
+    setState(() => _isAppleLoading = true);
+    await controller.signInWithApple();
+    if (!mounted) return;
+    setState(() => _isAppleLoading = false);
+    _handleAuthFailure(controller);
+  }
+
+  void _handleAuthFailure(AuthController controller) {
     if (controller.state case AuthFailed(:final failure)) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -163,7 +185,7 @@ class _LoginPageState extends State<LoginPage> {
                             onPressed: isLoading
                                 ? null
                                 : () => _onLoginPressed(controller),
-                            child: isLoading
+                            child: (isLoading && !_isGoogleLoading && !_isAppleLoading)
                                 ? const SizedBox(
                                     width: 22,
                                     height: 22,
@@ -173,6 +195,22 @@ class _LoginPageState extends State<LoginPage> {
                                     ),
                                   )
                                 : const Text('Entrar na quadra'),
+                          ),
+                          const SizedBox(height: AppSpacing.md),
+                          const SocialAuthDivider(),
+                          const SizedBox(height: AppSpacing.md),
+                          GoogleSignInButton(
+                            onPressed: isLoading
+                                ? null
+                                : () => _onGoogleLoginPressed(controller),
+                            isLoading: _isGoogleLoading,
+                          ),
+                          const SizedBox(height: AppSpacing.sm + 4),
+                          AppleSignInButton(
+                            onPressed: isLoading
+                                ? null
+                                : () => _onAppleLoginPressed(controller),
+                            isLoading: _isAppleLoading,
                           ),
                         ],
                       ),

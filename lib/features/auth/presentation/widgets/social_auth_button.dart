@@ -61,7 +61,7 @@ class SocialAuthButton extends StatelessWidget {
           onTap: isInteractive ? onPressed : null,
           borderRadius: effectiveRadius,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm + 4),
             child: Center(
               child: isLoading
                   ? SizedBox(
@@ -77,12 +77,16 @@ class SocialAuthButton extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         icon,
-                        const SizedBox(width: AppSpacing.sm + 4),
-                        Text(
-                          label,
-                          style: AppText.labelLg.copyWith(
-                            color: effectiveFg,
-                            fontWeight: FontWeight.w600,
+                        const SizedBox(width: AppSpacing.sm),
+                        Flexible(
+                          child: Text(
+                            label,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppText.labelLg.copyWith(
+                              color: effectiveFg,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
                       ],
