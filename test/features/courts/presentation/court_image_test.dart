@@ -16,7 +16,7 @@ void main() {
     pricePerHourInCents: 10000,
   );
 
-  group('CourtImage (#42)', () {
+  group('CourtImage', () {
     testWidgets('renderiza gradiente com ícone da modalidade quando imageUrl é vazia',
         (tester) async {
       await tester.pumpWidget(

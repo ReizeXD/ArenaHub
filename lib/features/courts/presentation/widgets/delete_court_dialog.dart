@@ -5,7 +5,7 @@ import '../../../../theme/app_theme.dart';
 import '../../../../theme/app_typography.dart';
 import '../../domain/entities/court.dart';
 
-/// Modal de confirmação para exclusão de quadra esportiva (#46).
+/// Modal de confirmação para exclusão de quadra esportiva.
 class DeleteCourtDialog extends StatelessWidget {
   const DeleteCourtDialog({super.key, required this.court});
 

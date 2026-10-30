@@ -6,7 +6,7 @@ import '../../../../theme/app_typography.dart';
 import '../../domain/entities/court.dart';
 import 'sport_visuals.dart';
 
-/// Card de exibição de uma quadra gerenciada pelo dono, com ações rápidas (#45).
+/// Card de exibição de uma quadra gerenciada pelo dono, com ações rápidas
 ///
 /// Apresenta foto/gradiente, modalidade, nome, endereço, horários de funcionamento,
 /// preço por hora e botões para Ver Agenda, Editar e Excluir.
@@ -124,7 +124,7 @@ class OwnerCourtCard extends StatelessWidget {
                   ),
                   const SizedBox(height: AppSpacing.sm + 4),
 
-                  // Barra de ações rápidas (#45)
+                  // Barra de ações rápidas
                   Row(
                     children: [
                       // Ver Agenda

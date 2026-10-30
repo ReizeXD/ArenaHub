@@ -53,7 +53,7 @@ void main() {
     );
   }
 
-  group('CourtFormPage — Modo Criação (#43, #48)', () {
+  group('CourtFormPage — Modo Criação', () {
     testWidgets('exibe título Nova Quadra e botão Cadastrar Quadra',
         (tester) async {
       await tester.pumpWidget(buildSubject());
@@ -145,7 +145,7 @@ void main() {
     });
   });
 
-  group('CourtFormPage — Modo Edição (#44, #48)', () {
+  group('CourtFormPage — Modo Edição', () {
     testWidgets('preenche campos com dados da quadra existente',
         (tester) async {
       await tester.pumpWidget(buildSubject(courtToEdit: existingCourt));
@@ -212,7 +212,7 @@ void main() {
     });
   });
 
-  group('CourtFormPage — Validação de Horários e Preço (#43, #48)', () {
+  group('CourtFormPage — Validação de Horários e Preço', () {
     testWidgets('valida horários quando fechamento <= abertura',
         (tester) async {
       await tester.pumpWidget(

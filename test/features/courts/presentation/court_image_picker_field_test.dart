@@ -11,7 +11,7 @@ void main() {
     'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=',
   );
 
-  group('CourtImagePickerField (#41)', () {
+  group('CourtImagePickerField', () {
     testWidgets('exibe placeholder com convite quando não há foto',
         (tester) async {
       await tester.pumpWidget(

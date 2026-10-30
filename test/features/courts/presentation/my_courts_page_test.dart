@@ -5,12 +5,16 @@ import 'package:arenahub/features/courts/domain/entities/sport.dart';
 import 'package:arenahub/features/courts/domain/usecases/create_court.dart';
 import 'package:arenahub/features/courts/domain/usecases/delete_court.dart';
 import 'package:arenahub/features/courts/domain/usecases/list_my_courts.dart';
+import 'package:arenahub/features/courts/domain/usecases/get_owner_court_agenda.dart';
 import 'package:arenahub/features/courts/domain/usecases/update_court.dart';
 import 'package:arenahub/features/courts/presentation/controllers/my_courts_controller.dart';
+import 'package:arenahub/features/courts/presentation/controllers/owner_agenda_controller.dart';
 import 'package:arenahub/features/courts/presentation/pages/my_courts_page.dart';
+import 'package:arenahub/features/courts/presentation/pages/owner_court_agenda_page.dart';
 import 'package:arenahub/features/courts/presentation/states/my_courts_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:provider/provider.dart';
 
 import '../../../support/court_fakes.dart';
 
@@ -67,7 +71,7 @@ void main() {
     );
   }
 
-  group('MyCourtsPage (#47, #49)', () {
+  group('MyCourtsPage', () {
     testWidgets('exibe loading indicador no estado inicial MyCourtsLoading',
         (tester) async {
       final unstartedController = MyCourtsController(
@@ -151,7 +155,7 @@ void main() {
       expect(find.text('7h–23h'), findsOneWidget);
     });
 
-    testWidgets('ao clicar em Editar, abre CourtFormPage com os dados da quadra (#45)',
+    testWidgets('ao clicar em Editar, abre CourtFormPage com os dados da quadra',
         (tester) async {
       await tester.pumpWidget(buildSubject());
       await tester.pumpAndSettle();
@@ -166,7 +170,7 @@ void main() {
       expect(find.text('Quadra Central de Beach Tennis'), findsOneWidget);
     });
 
-    testWidgets('ao clicar em Ver Agenda, invoca callback com a quadra (#45)',
+    testWidgets('ao clicar em Ver Agenda, invoca callback com a quadra',
         (tester) async {
       Court? clickedCourt;
 
@@ -186,7 +190,43 @@ void main() {
       expect(clickedCourt?.id, court1.id);
     });
 
-    testWidgets('fluxo de exclusão com confirmação e feedback (#46)',
+    testWidgets('ao clicar em Ver Agenda sem callback customizado, navega para OwnerCourtAgendaPage',
+        (tester) async {
+      final fakeBookingsRepo = FakeBookingRepository([]);
+      final agendaController = OwnerAgendaController(
+        GetOwnerCourtAgenda(fakeBookingsRepo),
+      );
+
+      await tester.pumpWidget(
+        MultiProvider(
+          providers: [
+            ChangeNotifierProvider<MyCourtsController>.value(
+              value: controller,
+            ),
+            ChangeNotifierProvider<OwnerAgendaController>.value(
+              value: agendaController,
+            ),
+          ],
+          child: MaterialApp(
+            home: MyCourtsPage(
+              ownerId: ownerId,
+              controller: controller,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final agendaButton = find.byKey(Key('owner_court_agenda_${court1.id}'));
+      await tester.ensureVisible(agendaButton);
+      await tester.tap(agendaButton);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(OwnerCourtAgendaPage), findsOneWidget);
+      expect(find.text('Agenda da Quadra'), findsOneWidget);
+    });
+
+    testWidgets('fluxo de exclusão com confirmação e feedback',
         (tester) async {
       await tester.pumpWidget(buildSubject());
       await tester.pumpAndSettle();
@@ -197,7 +237,7 @@ void main() {
       await tester.tap(deleteButton);
       await tester.pumpAndSettle();
 
-      // Confere se o modal de confirmação abriu (#46)
+      // Confere se o modal de confirmação abriu
       expect(find.text('Excluir Quadra'), findsOneWidget);
       expect(
         find.textContaining('Tem certeza de que deseja excluir a quadra "${court1.name}"?'),
