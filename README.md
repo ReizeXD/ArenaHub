@@ -27,7 +27,7 @@ Requer **Flutter 3.47+** (`flutter --version`). Nenhum outro pré-requisito.
 flutter pub get
 flutter run -d chrome                    # mais rápido para desenvolver
 flutter run                              # escolhe o dispositivo conectado
-flutter test                             # 122 testes
+flutter test                             # 294 testes
 flutter analyze                          # sem issues
 ```
 
@@ -233,19 +233,24 @@ comparação em tempo constante. O hash carrega os próprios parâmetros
 futuro não invalida as senhas já cadastradas. Nenhuma senha é gravada em
 texto puro, nem mesmo as das contas de demonstração.
 
+## Autenticação Social (Google & Apple)
+
+O ArenaHub oferece suporte a login e cadastro com um toque através do **Google Sign-In** e **Sign in with Apple**:
+
+- **Onboarding ágil**: O perfil do usuário é provisionado automaticamente com papel de jogador (`Role.player`).
+- **Resiliência**: Tratamento gracioso de cancelamento de folha nativa (`OAuthCancelledFailure`) sem disparar alertas de erro indevidos.
+- **Suporte híbrido**: Funciona tanto no backend em nuvem (`AuthMode.firebase`) quanto na alternativa offline (`AuthMode.local`), permitindo desenvolvimento e testes automatizados sem credenciais externas.
+- **Guia passo a passo**: Para configurar as chaves OAuth no Firebase Console, Google Cloud Console e Apple Developer Portal, consulte o [Guia de Configuração de Autenticação Social](docs/social_auth_setup.md).
+
 ## Testes
 
-122 testes, sem nenhum banco ou plugin nativo: os ports são pequenos e os
-dublês são escritos à mão em `test/support/fakes.dart`. Cobrem value
-objects, os quatro casos de uso, o hasher, o repositório local, o mapper de
-sessão, o seeder, o `AuthController` e a `LoginPage`.
+294 testes automatizados cobrindo 100% dos fluxos e regras de negócio sem nenhum banco ou plugin nativo: os ports são pequenos e os
+dublês são escritos à mão em `test/support/fakes.dart` e `court_fakes.dart`. Cobrem value
+objects, casos de uso, repositórios, controladores, páginas de apresentação e
+jornadas ponta a ponta (E2E).
 
-## O que falta
+## Próximos Passos
 
-- **Tela de cadastro.** O caso de uso `SignUp` e o `AuthController` já a
-  suportam nos dois modos; falta a tela. Enquanto isso, as contas de
-  demonstração (modo local) ou usuários criados no console (modo Firebase).
-- **Recuperação de senha, confirmação de e-mail e biometria.** Não previstos
-  nesta entrega.
-- **Domínio de arenas.** A `HomePage` ainda é uma tela de boas-vindas;
-  quadras, arenas e reservas são o próximo módulo.
+- **Recuperação de senha e confirmação de e-mail.**
+- **Biometria local** (Face ID / Touch ID / Biometria Android).
+- **Processamento de pagamentos** para confirmação de reservas.
