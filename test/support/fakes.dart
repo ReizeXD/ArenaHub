@@ -8,6 +8,8 @@ import 'package:arenahub/features/auth/domain/repositories/auth_repository.dart'
 import 'package:arenahub/features/auth/domain/services/session_storage.dart';
 import 'package:arenahub/features/auth/domain/usecases/get_current_session.dart';
 import 'package:arenahub/features/auth/domain/usecases/sign_in.dart';
+import 'package:arenahub/features/auth/domain/usecases/sign_in_with_apple.dart';
+import 'package:arenahub/features/auth/domain/usecases/sign_in_with_google.dart';
 import 'package:arenahub/features/auth/domain/usecases/sign_out.dart';
 import 'package:arenahub/features/auth/domain/usecases/sign_up.dart';
 import 'package:arenahub/features/auth/domain/value_objects/email.dart';
@@ -137,5 +139,7 @@ AuthController controllerWith({
     SignUp(repo, store),
     SignOut(store),
     GetCurrentSession(store),
+    signInWithGoogle: SignInWithGoogle(repo, store),
+    signInWithApple: SignInWithApple(repo, store),
   );
 }

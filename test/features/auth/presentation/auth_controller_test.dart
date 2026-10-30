@@ -86,4 +86,112 @@ void main() {
     expect(await storage.read(), isNull);
     expect(storage.clearCalls, 1);
   });
+
+  group('Login social com Google', () {
+    test('autentica com sucesso e passa por em-progresso', () async {
+      final controller = controllerWith();
+      final observed = <AuthState>[];
+      controller.addListener(() => observed.add(controller.state));
+
+      await controller.signInWithGoogle();
+
+      expect(observed.first, isA<AuthInProgress>());
+      expect(observed.last, isA<Authenticated>());
+      expect(controller.session?.user.email, 'atleta.google@arenahub.com');
+    });
+
+    test('quando cancelado pelo usuário, volta para não autenticado sem erro', () async {
+      final controller = controllerWith(
+        repository: FakeAuthRepository(
+          failure: const OAuthCancelledFailure(),
+        ),
+      );
+      final observed = <AuthState>[];
+      controller.addListener(() => observed.add(controller.state));
+
+      await controller.signInWithGoogle();
+
+      expect(observed.first, isA<AuthInProgress>());
+      expect(observed.last, isA<Unauthenticated>());
+      expect(controller.state, isA<Unauthenticated>());
+    });
+
+    test('quando ocorre colisão de conta, expõe AuthFailed tipado', () async {
+      final controller = controllerWith(
+        repository: FakeAuthRepository(
+          failure: const OAuthAccountCollisionFailure(),
+        ),
+      );
+
+      await controller.signInWithGoogle();
+
+      expect(controller.state, isA<AuthFailed>());
+      expect(
+        (controller.state as AuthFailed).failure,
+        isA<OAuthAccountCollisionFailure>(),
+      );
+    });
+
+    test('quando ocorre erro de rede, expõe AuthFailed tipado', () async {
+      final controller = controllerWith(
+        repository: FakeAuthRepository(
+          failure: const OAuthNetworkFailure(),
+        ),
+      );
+
+      await controller.signInWithGoogle();
+
+      expect(controller.state, isA<AuthFailed>());
+      expect(
+        (controller.state as AuthFailed).failure,
+        isA<OAuthNetworkFailure>(),
+      );
+    });
+  });
+
+  group('Login social com Apple', () {
+    test('autentica com sucesso e passa por em-progresso', () async {
+      final controller = controllerWith();
+      final observed = <AuthState>[];
+      controller.addListener(() => observed.add(controller.state));
+
+      await controller.signInWithApple();
+
+      expect(observed.first, isA<AuthInProgress>());
+      expect(observed.last, isA<Authenticated>());
+      expect(controller.session?.user.email, 'atleta.apple@arenahub.com');
+    });
+
+    test('quando cancelado pelo usuário, volta para não autenticado sem erro', () async {
+      final controller = controllerWith(
+        repository: FakeAuthRepository(
+          failure: const OAuthCancelledFailure(),
+        ),
+      );
+      final observed = <AuthState>[];
+      controller.addListener(() => observed.add(controller.state));
+
+      await controller.signInWithApple();
+
+      expect(observed.first, isA<AuthInProgress>());
+      expect(observed.last, isA<Unauthenticated>());
+      expect(controller.state, isA<Unauthenticated>());
+    });
+
+    test('quando ocorre colisão de conta, expõe AuthFailed tipado', () async {
+      final controller = controllerWith(
+        repository: FakeAuthRepository(
+          failure: const OAuthAccountCollisionFailure(),
+        ),
+      );
+
+      await controller.signInWithApple();
+
+      expect(controller.state, isA<AuthFailed>());
+      expect(
+        (controller.state as AuthFailed).failure,
+        isA<OAuthAccountCollisionFailure>(),
+      );
+    });
+  });
 }
