@@ -78,11 +78,8 @@ void main() {
       auth: authController,
       courts: courtsController,
       myCourts: myCourtsController,
+      initialLocation: initialLocation ?? AppRoutes.courts,
     );
-
-    if (initialLocation != null) {
-      router.go(initialLocation);
-    }
 
     return MultiProvider(
       providers: [
@@ -115,7 +112,13 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(MyCourtsPage), findsOneWidget);
-      expect(find.text('Minhas Quadras'), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byType(MyCourtsPage),
+          matching: find.text('Minhas Quadras'),
+        ),
+        findsOneWidget,
+      );
       expect(find.text('Quadra de Beach Tennis Central'), findsOneWidget);
     });
 

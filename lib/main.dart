@@ -10,6 +10,7 @@ import 'features/courts/presentation/controllers/courts_controller.dart';
 import 'features/courts/presentation/controllers/my_bookings_controller.dart';
 import 'features/courts/presentation/controllers/my_courts_controller.dart';
 import 'features/courts/presentation/controllers/owner_agenda_controller.dart';
+import 'features/profile/presentation/controllers/app_mode_controller.dart';
 import 'router/app_router.dart';
 import 'theme/app_theme.dart';
 
@@ -43,6 +44,7 @@ class ArenaHubApp extends StatefulWidget {
     required this.myBookingsController,
     this.myCourtsController,
     this.ownerAgendaController,
+    this.appModeController,
   });
 
   final AuthController authController;
@@ -51,12 +53,16 @@ class ArenaHubApp extends StatefulWidget {
   final MyBookingsController myBookingsController;
   final MyCourtsController? myCourtsController;
   final OwnerAgendaController? ownerAgendaController;
+  final AppModeController? appModeController;
 
   @override
   State<ArenaHubApp> createState() => _ArenaHubAppState();
 }
 
 class _ArenaHubAppState extends State<ArenaHubApp> {
+  late final AppModeController _appModeController =
+      widget.appModeController ?? AppModeController();
+
   late final GoRouter _router = buildAppRouter(
     auth: widget.authController,
     courts: widget.courtsController,
@@ -65,6 +71,9 @@ class _ArenaHubAppState extends State<ArenaHubApp> {
 
   @override
   void dispose() {
+    if (widget.appModeController == null) {
+      _appModeController.dispose();
+    }
     _router.dispose();
     super.dispose();
   }
@@ -84,6 +93,9 @@ class _ArenaHubAppState extends State<ArenaHubApp> {
         ),
         ChangeNotifierProvider<MyBookingsController>.value(
           value: widget.myBookingsController,
+        ),
+        ChangeNotifierProvider<AppModeController>.value(
+          value: _appModeController,
         ),
         if (widget.myCourtsController != null)
           ChangeNotifierProvider<MyCourtsController>.value(

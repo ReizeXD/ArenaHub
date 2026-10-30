@@ -16,6 +16,7 @@ import '../features/courts/presentation/pages/my_bookings_page.dart';
 import '../features/courts/presentation/pages/my_courts_page.dart';
 import '../features/courts/presentation/pages/owner_court_agenda_page.dart';
 import '../features/courts/presentation/states/courts_state.dart';
+import '../features/profile/presentation/pages/profile_page.dart';
 
 abstract final class AppRoutes {
   static const splash = '/splash';
@@ -36,6 +37,7 @@ GoRouter buildAppRouter({
   required AuthController auth,
   required CourtsController courts,
   MyCourtsController? myCourts,
+  String initialLocation = AppRoutes.courts,
 }) {
   final rootKey = GlobalKey<NavigatorState>();
 
@@ -59,7 +61,7 @@ GoRouter buildAppRouter({
 
   return GoRouter(
     navigatorKey: rootKey,
-    initialLocation: AppRoutes.courts,
+    initialLocation: initialLocation,
     refreshListenable: auth,
     redirect: (context, state) {
       final location = state.matchedLocation;
@@ -91,6 +93,7 @@ GoRouter buildAppRouter({
         builder: (_, _, shell) =>
             HomeShell(session: auth.session!, navigationShell: shell),
         branches: [
+          // Branch 0: Catálogo de Quadras (Atleta)
           StatefulShellBranch(
             routes: [
               GoRoute(
@@ -109,6 +112,7 @@ GoRouter buildAppRouter({
               ),
             ],
           ),
+          // Branch 1: Reservas do Atleta
           StatefulShellBranch(
             routes: [
               GoRoute(
@@ -117,45 +121,58 @@ GoRouter buildAppRouter({
               ),
             ],
           ),
-        ],
-      ),
-      GoRoute(
-        path: AppRoutes.myCourts,
-        parentNavigatorKey: rootKey,
-        builder: (context, state) => MyCourtsPage(
-          ownerId: auth.session!.user.id,
-          onViewCourtAgenda: (court) => context.push(
-            AppRoutes.myCourtAgenda(court.id),
-            extra: court,
+          // Branch 2: Perfil do Usuário
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.profile,
+                builder: (_, _) => ProfilePage(session: auth.session!),
+              ),
+            ],
           ),
-        ),
-        routes: [
-          GoRoute(
-            path: 'new',
-            parentNavigatorKey: rootKey,
-            builder: (context, state) => CourtFormPage(
-              ownerId: auth.session!.user.id,
-            ),
-          ),
-          GoRoute(
-            path: ':courtId/edit',
-            parentNavigatorKey: rootKey,
-            redirect: (_, state) =>
-                courtFor(state) == null ? AppRoutes.myCourts : null,
-            builder: (context, state) => CourtFormPage(
-              ownerId: auth.session!.user.id,
-              courtToEdit: courtFor(state)!,
-            ),
-          ),
-          GoRoute(
-            path: ':courtId/agenda',
-            parentNavigatorKey: rootKey,
-            redirect: (_, state) =>
-                courtFor(state) == null ? AppRoutes.myCourts : null,
-            builder: (context, state) => OwnerCourtAgendaPage(
-              court: courtFor(state)!,
-              ownerId: auth.session!.user.id,
-            ),
+          // Branch 3: Minhas Quadras (Proprietário)
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.myCourts,
+                builder: (context, state) => MyCourtsPage(
+                  ownerId: auth.session!.user.id,
+                  onViewCourtAgenda: (court) => context.push(
+                    AppRoutes.myCourtAgenda(court.id),
+                    extra: court,
+                  ),
+                ),
+                routes: [
+                  GoRoute(
+                    path: 'new',
+                    parentNavigatorKey: rootKey,
+                    builder: (context, state) => CourtFormPage(
+                      ownerId: auth.session!.user.id,
+                    ),
+                  ),
+                  GoRoute(
+                    path: ':courtId/edit',
+                    parentNavigatorKey: rootKey,
+                    redirect: (_, state) =>
+                        courtFor(state) == null ? AppRoutes.myCourts : null,
+                    builder: (context, state) => CourtFormPage(
+                      ownerId: auth.session!.user.id,
+                      courtToEdit: courtFor(state)!,
+                    ),
+                  ),
+                  GoRoute(
+                    path: ':courtId/agenda',
+                    parentNavigatorKey: rootKey,
+                    redirect: (_, state) =>
+                        courtFor(state) == null ? AppRoutes.myCourts : null,
+                    builder: (context, state) => OwnerCourtAgendaPage(
+                      court: courtFor(state)!,
+                      ownerId: auth.session!.user.id,
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ],
       ),
