@@ -1,6 +1,7 @@
 import '../../../../core/failure.dart';
 import '../../../../core/result.dart';
 import '../../domain/entities/auth_session.dart';
+import '../../domain/entities/role.dart';
 import '../../domain/entities/sign_up_data.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/repositories/auth_repository.dart';
@@ -61,6 +62,60 @@ class LocalAuthRepository implements AuthRepository {
       UserRecord(
         user: user,
         passwordHash: _passwordHasher.hash(data.password.value),
+      ),
+    );
+
+    return Ok(_startSession(user));
+  }
+
+  @override
+  Future<Result<AuthSession>> signInWithGoogle({
+    String email = 'atleta.google@arenahub.com',
+    String fullName = 'Atleta Google',
+  }) async {
+    final existing = await _dataSource.findByEmail(email);
+    if (existing != null) {
+      return Ok(_startSession(existing.user));
+    }
+
+    final user = User(
+      id: _idGenerator(),
+      fullName: fullName,
+      email: email,
+      role: Role.player,
+    );
+
+    await _dataSource.insert(
+      UserRecord(
+        user: user,
+        passwordHash: _passwordHasher.hash('oauth_google_local'),
+      ),
+    );
+
+    return Ok(_startSession(user));
+  }
+
+  @override
+  Future<Result<AuthSession>> signInWithApple({
+    String email = 'atleta.apple@arenahub.com',
+    String fullName = 'Atleta Apple',
+  }) async {
+    final existing = await _dataSource.findByEmail(email);
+    if (existing != null) {
+      return Ok(_startSession(existing.user));
+    }
+
+    final user = User(
+      id: _idGenerator(),
+      fullName: fullName,
+      email: email,
+      role: Role.player,
+    );
+
+    await _dataSource.insert(
+      UserRecord(
+        user: user,
+        passwordHash: _passwordHasher.hash('oauth_apple_local'),
       ),
     );
 

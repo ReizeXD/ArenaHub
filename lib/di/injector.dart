@@ -17,6 +17,8 @@ import '../features/auth/domain/repositories/auth_repository.dart';
 import '../features/auth/domain/services/session_storage.dart';
 import '../features/auth/domain/usecases/get_current_session.dart';
 import '../features/auth/domain/usecases/sign_in.dart';
+import '../features/auth/domain/usecases/sign_in_with_apple.dart';
+import '../features/auth/domain/usecases/sign_in_with_google.dart';
 import '../features/auth/domain/usecases/sign_out.dart';
 import '../features/auth/domain/usecases/sign_up.dart';
 import '../features/auth/presentation/controllers/auth_controller.dart';
@@ -90,6 +92,8 @@ class Injector {
       SignUp(authRepository, sessionStorage),
       SignOut(sessionStorage),
       GetCurrentSession(sessionStorage),
+      signInWithGoogle: SignInWithGoogle(authRepository, sessionStorage),
+      signInWithApple: SignInWithApple(authRepository, sessionStorage),
     );
     await controller.restoreSession();
 

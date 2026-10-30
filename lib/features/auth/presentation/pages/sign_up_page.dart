@@ -12,6 +12,7 @@ import '../../domain/value_objects/email.dart';
 import '../../domain/value_objects/password.dart';
 import '../controllers/auth_controller.dart';
 import '../states/auth_state.dart';
+import '../widgets/social_auth_widgets.dart';
 
 /// Tela de cadastro de novo usuário no estilo Athletic Modernist.
 class SignUpPage extends StatefulWidget {
@@ -31,6 +32,8 @@ class _SignUpPageState extends State<SignUpPage> {
 
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+  bool _isGoogleLoading = false;
+  bool _isAppleLoading = false;
 
   @override
   void dispose() {
@@ -52,7 +55,26 @@ class _SignUpPageState extends State<SignUpPage> {
     );
 
     if (!mounted) return;
+    _handleAuthFailure(controller);
+  }
 
+  Future<void> _onGoogleSignUpPressed(AuthController controller) async {
+    setState(() => _isGoogleLoading = true);
+    await controller.signInWithGoogle();
+    if (!mounted) return;
+    setState(() => _isGoogleLoading = false);
+    _handleAuthFailure(controller);
+  }
+
+  Future<void> _onAppleSignUpPressed(AuthController controller) async {
+    setState(() => _isAppleLoading = true);
+    await controller.signInWithApple();
+    if (!mounted) return;
+    setState(() => _isAppleLoading = false);
+    _handleAuthFailure(controller);
+  }
+
+  void _handleAuthFailure(AuthController controller) {
     if (controller.state case AuthFailed(:final failure)) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -155,7 +177,7 @@ class _SignUpPageState extends State<SignUpPage> {
                             textInputAction: TextInputAction.next,
                             style: AppText.bodyMd,
                             decoration: const InputDecoration(
-                              hintText: 'Ex.: Carlos Silva',
+                              hintText: 'Ex: Carlos Silva',
                               prefixIcon: Icon(Icons.person_outline_rounded),
                             ),
                             validator: _validateName,
@@ -183,7 +205,7 @@ class _SignUpPageState extends State<SignUpPage> {
                             textInputAction: TextInputAction.next,
                             style: AppText.bodyMd,
                             decoration: InputDecoration(
-                              hintText: 'Mínimo 8 caracteres',
+                              hintText: 'Mínimo de 8 caracteres',
                               prefixIcon:
                                   const Icon(Icons.lock_outline_rounded),
                               suffixIcon: IconButton(
@@ -238,7 +260,7 @@ class _SignUpPageState extends State<SignUpPage> {
                             onPressed: isLoading
                                 ? null
                                 : () => _onSignUpPressed(controller),
-                            child: isLoading
+                            child: (isLoading && !_isGoogleLoading && !_isAppleLoading)
                                 ? const SizedBox(
                                     width: 22,
                                     height: 22,
@@ -248,6 +270,24 @@ class _SignUpPageState extends State<SignUpPage> {
                                     ),
                                   )
                                 : const Text('Criar minha conta'),
+                          ),
+                          const SizedBox(height: AppSpacing.md),
+                          const SocialAuthDivider(label: 'ou cadastre-se com'),
+                          const SizedBox(height: AppSpacing.md),
+                          GoogleSignInButton(
+                            text: 'Cadastre-se com o Google',
+                            onPressed: isLoading
+                                ? null
+                                : () => _onGoogleSignUpPressed(controller),
+                            isLoading: _isGoogleLoading,
+                          ),
+                          const SizedBox(height: AppSpacing.sm + 4),
+                          AppleSignInButton(
+                            text: 'Cadastre-se com a Apple',
+                            onPressed: isLoading
+                                ? null
+                                : () => _onAppleSignUpPressed(controller),
+                            isLoading: _isAppleLoading,
                           ),
                         ],
                       ),

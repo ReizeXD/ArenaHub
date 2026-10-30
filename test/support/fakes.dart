@@ -8,6 +8,8 @@ import 'package:arenahub/features/auth/domain/repositories/auth_repository.dart'
 import 'package:arenahub/features/auth/domain/services/session_storage.dart';
 import 'package:arenahub/features/auth/domain/usecases/get_current_session.dart';
 import 'package:arenahub/features/auth/domain/usecases/sign_in.dart';
+import 'package:arenahub/features/auth/domain/usecases/sign_in_with_apple.dart';
+import 'package:arenahub/features/auth/domain/usecases/sign_in_with_google.dart';
 import 'package:arenahub/features/auth/domain/usecases/sign_out.dart';
 import 'package:arenahub/features/auth/domain/usecases/sign_up.dart';
 import 'package:arenahub/features/auth/domain/value_objects/email.dart';
@@ -27,6 +29,8 @@ class FakeAuthRepository implements AuthRepository {
 
   int signInCalls = 0;
   int signUpCalls = 0;
+  int signInWithGoogleCalls = 0;
+  int signInWithAppleCalls = 0;
   Email? lastEmail;
 
   @override
@@ -49,6 +53,34 @@ class FakeAuthRepository implements AuthRepository {
     final error = failure;
     if (error != null) return Err(error);
     return Ok(sessionFor(data.email.value, fullName: data.fullName));
+  }
+
+  @override
+  Future<Result<AuthSession>> signInWithGoogle() async {
+    signInWithGoogleCalls++;
+
+    final error = failure;
+    if (error != null) return Err(error);
+    return Ok(
+      sessionFor(
+        'atleta.google@arenahub.com',
+        fullName: 'Atleta Google',
+      ),
+    );
+  }
+
+  @override
+  Future<Result<AuthSession>> signInWithApple() async {
+    signInWithAppleCalls++;
+
+    final error = failure;
+    if (error != null) return Err(error);
+    return Ok(
+      sessionFor(
+        'atleta.apple@arenahub.com',
+        fullName: 'Atleta Apple',
+      ),
+    );
   }
 
   static AuthSession sessionFor(
@@ -107,5 +139,7 @@ AuthController controllerWith({
     SignUp(repo, store),
     SignOut(store),
     GetCurrentSession(store),
+    signInWithGoogle: SignInWithGoogle(repo, store),
+    signInWithApple: SignInWithApple(repo, store),
   );
 }

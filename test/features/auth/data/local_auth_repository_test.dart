@@ -101,4 +101,68 @@ void main() {
 
     expect((result as Ok<AuthSession>).value.isExpired, isFalse);
   });
+
+  group('autenticação social no adaptador local', () {
+    test('signInWithGoogle cria usuário se ainda não existir', () async {
+      final result = await repository.signInWithGoogle();
+
+      expect(result, isA<Ok<AuthSession>>());
+      final session = (result as Ok<AuthSession>).value;
+      expect(session.user.email, 'atleta.google@arenahub.com');
+      expect(session.user.fullName, 'Atleta Google');
+      expect(session.user.role, Role.player);
+
+      final persisted = await dataSource.findByEmail('atleta.google@arenahub.com');
+      expect(persisted, isNotNull);
+    });
+
+    test('signInWithGoogle reutiliza usuário existente se já cadastrado', () async {
+      await repository.signUp(
+        SignUpData(
+          fullName: 'Usuário Existente',
+          email: emailOf('atleta.google@arenahub.com'),
+          password: (Password.create('arena2026') as Ok<Password>).value,
+          role: Role.owner,
+        ),
+      );
+
+      final result = await repository.signInWithGoogle();
+
+      expect(result, isA<Ok<AuthSession>>());
+      final session = (result as Ok<AuthSession>).value;
+      expect(session.user.fullName, 'Usuário Existente');
+      expect(session.user.role, Role.owner);
+    });
+
+    test('signInWithApple cria usuário se ainda não existir', () async {
+      final result = await repository.signInWithApple();
+
+      expect(result, isA<Ok<AuthSession>>());
+      final session = (result as Ok<AuthSession>).value;
+      expect(session.user.email, 'atleta.apple@arenahub.com');
+      expect(session.user.fullName, 'Atleta Apple');
+      expect(session.user.role, Role.player);
+
+      final persisted = await dataSource.findByEmail('atleta.apple@arenahub.com');
+      expect(persisted, isNotNull);
+    });
+
+    test('signInWithApple reutiliza usuário existente se já cadastrado', () async {
+      await repository.signUp(
+        SignUpData(
+          fullName: 'Usuário Existente Apple',
+          email: emailOf('atleta.apple@arenahub.com'),
+          password: (Password.create('arena2026') as Ok<Password>).value,
+          role: Role.owner,
+        ),
+      );
+
+      final result = await repository.signInWithApple();
+
+      expect(result, isA<Ok<AuthSession>>());
+      final session = (result as Ok<AuthSession>).value;
+      expect(session.user.fullName, 'Usuário Existente Apple');
+      expect(session.user.role, Role.owner);
+    });
+  });
 }

@@ -14,4 +14,10 @@ abstract interface class AuthRepository {
 
   /// Cria a conta e já devolve a sessão do usuário recém-criado.
   Future<Result<AuthSession>> signUp(SignUpData data);
+
+  /// Autentica utilizando credenciais do Google e devolve a sessão correspondente.
+  Future<Result<AuthSession>> signInWithGoogle();
+
+  /// Autentica utilizando credenciais da Apple e devolve a sessão correspondente.
+  Future<Result<AuthSession>> signInWithApple();
 }

@@ -26,7 +26,7 @@ final class EmailAlreadyInUseFailure extends Failure {
   const EmailAlreadyInUseFailure() : super('Este e-mail já está cadastrado.');
 }
 
-final class NetworkFailure extends Failure {
+base class NetworkFailure extends Failure {
   const NetworkFailure([
     super.message = 'Falha de comunicação. Verifique sua conexão.',
   ]);
@@ -81,5 +81,24 @@ final class UnauthorizedCourtActionFailure extends Failure {
 final class ImageUploadFailure extends Failure {
   const ImageUploadFailure([
     super.message = 'Não foi possível enviar a foto da quadra.',
+  ]);
+}
+
+final class OAuthCancelledFailure extends Failure {
+  const OAuthCancelledFailure([
+    super.message = 'Autenticação cancelada pelo usuário.',
+  ]);
+}
+
+final class OAuthNetworkFailure extends NetworkFailure {
+  const OAuthNetworkFailure([
+    super.message = 'Falha de comunicação com o serviço de autenticação.',
+  ]);
+}
+
+final class OAuthAccountCollisionFailure extends Failure {
+  const OAuthAccountCollisionFailure([
+    super.message =
+        'Já existe uma conta cadastrada com este e-mail através de outro método.',
   ]);
 }

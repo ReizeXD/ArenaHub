@@ -2,6 +2,7 @@ import 'package:arenahub/core/failure.dart';
 import 'package:arenahub/features/auth/domain/entities/role.dart';
 import 'package:arenahub/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:arenahub/features/auth/presentation/pages/sign_up_page.dart';
+import 'package:arenahub/features/auth/presentation/widgets/social_auth_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
@@ -36,6 +37,12 @@ void main() {
     expect(find.text('Senha de acesso'), findsOneWidget);
     expect(find.text('Confirmar senha'), findsOneWidget);
     expect(find.widgetWithText(FilledButton, 'Criar minha conta'), findsOneWidget);
+    expect(find.byType(SocialAuthDivider), findsOneWidget);
+    expect(find.text('ou cadastre-se com'), findsOneWidget);
+    expect(find.byType(GoogleSignInButton), findsOneWidget);
+    expect(find.text('Cadastre-se com o Google'), findsOneWidget);
+    expect(find.byType(AppleSignInButton), findsOneWidget);
+    expect(find.text('Cadastre-se com a Apple'), findsOneWidget);
     expect(find.text('Já tem uma conta?'), findsOneWidget);
     expect(find.text('Entrar'), findsOneWidget);
   });
@@ -166,5 +173,51 @@ void main() {
       ),
     );
     expect(revealedPasswordField.obscureText, isFalse);
+  });
+
+  group('Cadastro Social', () {
+    testWidgets('cadastro com Google autentica e cria sessão', (tester) async {
+      final repository = FakeAuthRepository();
+      final controller = controllerWith(repository: repository);
+      await pumpSignUp(tester, controller);
+
+      final googleButton = find.byType(GoogleSignInButton);
+      await tester.ensureVisible(googleButton);
+      await tester.tap(googleButton);
+      await tester.pumpAndSettle();
+
+      expect(repository.signInWithGoogleCalls, 1);
+      expect(controller.session?.user.email, 'atleta.google@arenahub.com');
+    });
+
+    testWidgets('cadastro com Apple autentica e cria sessão', (tester) async {
+      final repository = FakeAuthRepository();
+      final controller = controllerWith(repository: repository);
+      await pumpSignUp(tester, controller);
+
+      final appleButton = find.byType(AppleSignInButton);
+      await tester.ensureVisible(appleButton);
+      await tester.tap(appleButton);
+      await tester.pumpAndSettle();
+
+      expect(repository.signInWithAppleCalls, 1);
+      expect(controller.session?.user.email, 'atleta.apple@arenahub.com');
+    });
+
+    testWidgets('quando cadastro social com Google falha, exibe SnackBar de erro',
+        (tester) async {
+      final repository = FakeAuthRepository(
+        failure: const OAuthNetworkFailure(),
+      );
+      final controller = controllerWith(repository: repository);
+      await pumpSignUp(tester, controller);
+
+      final googleButton = find.byType(GoogleSignInButton);
+      await tester.ensureVisible(googleButton);
+      await tester.tap(googleButton);
+      await tester.pumpAndSettle();
+
+      expect(find.text(const OAuthNetworkFailure().message), findsOneWidget);
+    });
   });
 }
