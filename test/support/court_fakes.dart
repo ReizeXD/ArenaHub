@@ -1,21 +1,29 @@
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:arenahub/core/failure.dart';
 import 'package:arenahub/core/result.dart';
+import 'package:arenahub/features/courts/data/repositories/in_memory_court_repository.dart';
 import 'package:arenahub/features/courts/domain/entities/booking.dart';
 import 'package:arenahub/features/courts/domain/entities/court.dart';
 import 'package:arenahub/features/courts/domain/entities/sport.dart';
 import 'package:arenahub/features/courts/domain/repositories/booking_repository.dart';
 import 'package:arenahub/features/courts/domain/repositories/court_repository.dart';
-import 'package:arenahub/features/courts/data/repositories/in_memory_court_repository.dart';
 import 'package:arenahub/features/courts/domain/services/court_image_storage.dart';
 import 'package:arenahub/features/courts/domain/usecases/book_court.dart';
+import 'package:arenahub/features/courts/domain/usecases/create_court.dart';
+import 'package:arenahub/features/courts/domain/usecases/delete_court.dart';
 import 'package:arenahub/features/courts/domain/usecases/get_court_availability.dart';
+import 'package:arenahub/features/courts/domain/usecases/get_owner_court_agenda.dart';
 import 'package:arenahub/features/courts/domain/usecases/list_courts.dart';
-import 'package:arenahub/features/courts/presentation/controllers/booking_controller.dart';
 import 'package:arenahub/features/courts/domain/usecases/list_my_bookings.dart';
+import 'package:arenahub/features/courts/domain/usecases/list_my_courts.dart';
+import 'package:arenahub/features/courts/domain/usecases/update_court.dart';
+import 'package:arenahub/features/courts/presentation/controllers/booking_controller.dart';
 import 'package:arenahub/features/courts/presentation/controllers/courts_controller.dart';
 import 'package:arenahub/features/courts/presentation/controllers/my_bookings_controller.dart';
+import 'package:arenahub/features/courts/presentation/controllers/my_courts_controller.dart';
+import 'package:arenahub/features/courts/presentation/controllers/owner_agenda_controller.dart';
 
 /// Quadra de teste: abre 8h, fecha 12h — quatro horários, fácil de conferir.
 const Court testCourt = Court(
@@ -149,3 +157,34 @@ MyBookingsController myBookingsControllerWith({
         now: now,
       ),
     );
+
+/// Monta um `MyCourtsController` sobre dublês.
+MyCourtsController myCourtsControllerWith({
+  CourtRepository? courts,
+  CourtImageStorage? storage,
+  FutureOr<void> Function()? onCourtMutated,
+}) {
+  final repository = courts ?? InMemoryCourtRepository();
+  final imgStorage = storage ?? FakeCourtImageStorage();
+  return MyCourtsController(
+    listMyCourts: ListMyCourts(repository),
+    createCourt: CreateCourt(repository, imgStorage),
+    updateCourt: UpdateCourt(repository, imgStorage),
+    deleteCourt: DeleteCourt(repository),
+    onCourtMutated: onCourtMutated,
+  );
+}
+
+/// Monta um `OwnerAgendaController` sobre dublês.
+OwnerAgendaController ownerAgendaControllerWith({
+  BookingRepository? bookings,
+  DateTime Function()? now,
+  int daysAhead = OwnerAgendaController.defaultDaysAhead,
+}) {
+  final repository = bookings ?? FakeBookingRepository();
+  return OwnerAgendaController(
+    GetOwnerCourtAgenda(repository, now: now),
+    now: now,
+    daysAhead: daysAhead,
+  );
+}
