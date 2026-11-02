@@ -3,6 +3,7 @@ import 'package:arenahub/core/result.dart';
 import 'package:arenahub/features/courts/data/repositories/in_memory_court_repository.dart';
 import 'package:arenahub/features/courts/data/repositories/seeding_court_repository.dart';
 import 'package:arenahub/features/courts/domain/entities/court.dart';
+import 'package:arenahub/features/courts/domain/entities/sport.dart';
 import 'package:arenahub/features/courts/domain/repositories/court_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -145,5 +146,57 @@ void main() {
     final afterDelete = await repository.findById('q-seed');
     expect(afterDelete, isA<Err<Court>>());
     expect(seedCalls, 0);
+  });
+
+  test('completa a foto das quadras do catálogo gravadas sem ela', () async {
+    final inner = GrowableCourtRepository();
+    const catalogCourt = Court(
+      id: 'jatiuca',
+      name: 'Arena Jatiúca',
+      sport: Sport.society,
+      address: 'Av. Álvaro Otacílio',
+      pricePerHourInCents: 12000,
+      imageUrl: 'https://exemplo.com/jatiuca.jpg',
+    );
+    inner.courts
+      ..add(catalogCourt.copyWith(imageUrl: ''))
+      ..add(testCourt.copyWith(id: 'outra', imageUrl: ''));
+
+    final repository = SeedingCourtRepository(
+      inner,
+      () async => const Ok<void>(null),
+      const [catalogCourt],
+    );
+
+    final courts = (await repository.listAll() as Ok<List<Court>>).value;
+
+    expect(courts.first.imageUrl, 'https://exemplo.com/jatiuca.jpg');
+    expect(courts.last.imageUrl, isEmpty);
+    expect(inner.courts.first.imageUrl, 'https://exemplo.com/jatiuca.jpg');
+  });
+
+  test('não sobrescreve a foto que o dono já cadastrou', () async {
+    final inner = GrowableCourtRepository();
+    const catalogCourt = Court(
+      id: 'jatiuca',
+      name: 'Arena Jatiúca',
+      sport: Sport.society,
+      address: 'Av. Álvaro Otacílio',
+      pricePerHourInCents: 12000,
+      imageUrl: 'https://exemplo.com/demo.jpg',
+    );
+    inner.courts.add(
+      catalogCourt.copyWith(imageUrl: 'https://exemplo.com/dono.jpg'),
+    );
+
+    final repository = SeedingCourtRepository(
+      inner,
+      () async => const Ok<void>(null),
+      const [catalogCourt],
+    );
+
+    final courts = (await repository.listAll() as Ok<List<Court>>).value;
+
+    expect(courts.single.imageUrl, 'https://exemplo.com/dono.jpg');
   });
 }
