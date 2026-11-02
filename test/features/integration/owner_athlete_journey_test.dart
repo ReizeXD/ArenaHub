@@ -56,6 +56,7 @@ void main() {
 
       // Controladores conectados
       final auth = controllerWith();
+      final authStrategies = strategiesWith();
       await auth.restoreSession();
 
       final courtsCtrl = courtsControllerWith(repository: courtRepo);
@@ -82,6 +83,7 @@ void main() {
       await tester.pumpWidget(
         ArenaHubApp(
           authController: auth,
+          authStrategies: authStrategies,
           courtsController: courtsCtrl,
           bookingController: bookingCtrl,
           myBookingsController: myBookingsCtrl,

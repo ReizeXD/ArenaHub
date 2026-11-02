@@ -1,3 +1,4 @@
+import 'package:arenahub/features/auth/presentation/auth_strategy_factory.dart';
 import 'package:arenahub/core/failure.dart';
 import 'package:arenahub/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:arenahub/features/auth/presentation/pages/login_page.dart';
@@ -11,16 +12,29 @@ import 'support/court_fakes.dart';
 import 'support/fakes.dart';
 
 void main() {
-  Future<void> pumpLogin(WidgetTester tester, AuthController controller) =>
+  Future<void> pumpLogin(
+    WidgetTester tester,
+    AuthController controller, [
+    AuthStrategyFactory? strategies,
+  ]) =>
       tester.pumpWidget(
-        ChangeNotifierProvider<AuthController>.value(
-          value: controller,
+        MultiProvider(
+          providers: [
+            ChangeNotifierProvider<AuthController>.value(value: controller),
+            Provider<AuthStrategyFactory>.value(
+              value: strategies ?? strategiesWith(),
+            ),
+          ],
           child: const MaterialApp(home: LoginPage()),
         ),
       );
 
   testWidgets('mostra os campos de entrada', (tester) async {
-    await pumpLogin(tester, controllerWith());
+    await pumpLogin(
+      tester,
+      controllerWith(),
+      strategiesWith(),
+    );
 
     expect(find.text('ArenaHub'), findsOneWidget);
     expect(find.text('E-mail do atleta'), findsOneWidget);
@@ -31,7 +45,11 @@ void main() {
   testWidgets('recusa e-mail inválido sem chamar o caso de uso',
       (tester) async {
     final repository = FakeAuthRepository();
-    await pumpLogin(tester, controllerWith(repository: repository));
+    await pumpLogin(
+      tester,
+      controllerWith(repository: repository),
+      strategiesWith(repository: repository),
+    );
 
     await tester.enterText(find.byType(TextFormField).first, 'jogador@');
     await tester.enterText(find.byType(TextFormField).last, 'arena2026');
@@ -45,13 +63,13 @@ void main() {
 
   testWidgets('mostra a mensagem da falha quando as credenciais não batem',
       (tester) async {
+    final repository = FakeAuthRepository(
+      failure: const InvalidCredentialsFailure(),
+    );
     await pumpLogin(
       tester,
-      controllerWith(
-        repository: FakeAuthRepository(
-          failure: const InvalidCredentialsFailure(),
-        ),
-      ),
+      controllerWith(repository: repository),
+      strategiesWith(repository: repository),
     );
 
     await tester.enterText(
@@ -68,11 +86,13 @@ void main() {
   testWidgets('o gate troca de tela conforme o estado da autenticação',
       (tester) async {
     final controller = controllerWith();
+    final controllerStrategies = strategiesWith();
     await controller.restoreSession();
 
     await tester.pumpWidget(
       ArenaHubApp(
         authController: controller,
+        authStrategies: controllerStrategies,
         courtsController: courtsControllerWith(),
         bookingController: bookingControllerWith(),
         myBookingsController: myBookingsControllerWith(),

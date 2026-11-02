@@ -30,8 +30,11 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
 
     final auth = controllerWith();
+    final authStrategies = strategiesWith();
     await auth.restoreSession();
-    await auth.signIn(email: 'jogador@arenahub.com', password: 'arena2026');
+    await auth.signInWith(
+      authStrategies.emailPassword('jogador@arenahub.com', 'arena2026'),
+    );
 
     // Um repositório só para reservar e para listar: é assim no app real, e
     // sem isso a aba Reservas não enxergaria o que a outra acabou de gravar.
@@ -40,6 +43,7 @@ void main() {
     await tester.pumpWidget(
       ArenaHubApp(
         authController: auth,
+        authStrategies: authStrategies,
         courtsController: courtsControllerWith(),
         bookingController: bookingControllerWith(
           bookings: bookings,
