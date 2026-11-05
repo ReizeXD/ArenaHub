@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import 'di/auth_mode.dart';
 import 'di/injector.dart';
+import 'features/auth/presentation/auth_strategy_factory.dart';
 import 'features/auth/presentation/controllers/auth_controller.dart';
 import 'features/courts/presentation/controllers/booking_controller.dart';
 import 'features/courts/presentation/controllers/courts_controller.dart';
@@ -26,6 +27,7 @@ Future<void> main() async {
   runApp(
     ArenaHubApp(
       authController: injector.authController,
+      authStrategies: injector.authStrategies,
       courtsController: injector.courtsController,
       bookingController: injector.bookingController,
       myBookingsController: injector.myBookingsController,
@@ -39,6 +41,7 @@ class ArenaHubApp extends StatefulWidget {
   const ArenaHubApp({
     super.key,
     required this.authController,
+    required this.authStrategies,
     required this.courtsController,
     required this.bookingController,
     required this.myBookingsController,
@@ -48,6 +51,7 @@ class ArenaHubApp extends StatefulWidget {
   });
 
   final AuthController authController;
+  final AuthStrategyFactory authStrategies;
   final CourtsController courtsController;
   final BookingController bookingController;
   final MyBookingsController myBookingsController;
@@ -85,6 +89,7 @@ class _ArenaHubAppState extends State<ArenaHubApp> {
         ChangeNotifierProvider<AuthController>.value(
           value: widget.authController,
         ),
+        Provider<AuthStrategyFactory>.value(value: widget.authStrategies),
         ChangeNotifierProvider<CourtsController>.value(
           value: widget.courtsController,
         ),

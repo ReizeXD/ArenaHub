@@ -1,3 +1,4 @@
+import 'package:arenahub/features/auth/presentation/auth_strategy_factory.dart';
 import 'package:arenahub/core/failure.dart';
 import 'package:arenahub/features/auth/presentation/pages/login_page.dart';
 import 'package:arenahub/features/auth/presentation/pages/sign_up_page.dart';
@@ -44,6 +45,7 @@ void main() {
 
   Widget createApp({
     required controller,
+    required AuthStrategyFactory strategies,
     CourtRepository? courtRepository,
     BookingRepository? bookingRepository,
     CourtImageStorage? imageStorage,
@@ -76,6 +78,7 @@ void main() {
 
     return ArenaHubApp(
       authController: controller,
+      authStrategies: strategies,
       courtsController: courtsCtrl,
       bookingController: bookingCtrl,
       myBookingsController: myBookingsCtrl,
@@ -97,9 +100,13 @@ void main() {
       final storage = InMemorySessionStorage();
       final repository = FakeAuthRepository();
       final auth = controllerWith(repository: repository, storage: storage);
+      final authStrategies = strategiesWith(repository: repository, storage: storage);
       await auth.restoreSession();
 
-      await tester.pumpWidget(createApp(controller: auth));
+      await tester.pumpWidget(createApp(
+        controller: auth,
+        strategies: authStrategies,
+      ));
       await tester.pumpAndSettle();
 
       // 1. Tela inicial de Login
@@ -148,9 +155,13 @@ void main() {
       final storage = InMemorySessionStorage();
       final repository = FakeAuthRepository();
       final auth = controllerWith(repository: repository, storage: storage);
+      final authStrategies = strategiesWith(repository: repository, storage: storage);
       await auth.restoreSession();
 
-      await tester.pumpWidget(createApp(controller: auth));
+      await tester.pumpWidget(createApp(
+        controller: auth,
+        strategies: authStrategies,
+      ));
       await tester.pumpAndSettle();
 
       // 1. Inicia na LoginPage e navega até SignUpPage
@@ -193,9 +204,13 @@ void main() {
         failure: const OAuthCancelledFailure(),
       );
       final auth = controllerWith(repository: repository);
+      final authStrategies = strategiesWith(repository: repository);
       await auth.restoreSession();
 
-      await tester.pumpWidget(createApp(controller: auth));
+      await tester.pumpWidget(createApp(
+        controller: auth,
+        strategies: authStrategies,
+      ));
       await tester.pumpAndSettle();
 
       expect(find.byType(LoginPage), findsOneWidget);

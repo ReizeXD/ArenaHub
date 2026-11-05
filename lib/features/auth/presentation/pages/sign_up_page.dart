@@ -10,6 +10,7 @@ import '../../../../theme/app_typography.dart';
 import '../../domain/entities/role.dart';
 import '../../domain/value_objects/email.dart';
 import '../../domain/value_objects/password.dart';
+import '../auth_strategy_factory.dart';
 import '../controllers/auth_controller.dart';
 import '../states/auth_state.dart';
 import '../widgets/social_auth_widgets.dart';
@@ -34,6 +35,8 @@ class _SignUpPageState extends State<SignUpPage> {
   bool _obscureConfirmPassword = true;
   bool _isGoogleLoading = false;
   bool _isAppleLoading = false;
+
+  AuthStrategyFactory get _strategies => context.read<AuthStrategyFactory>();
 
   @override
   void dispose() {
@@ -60,7 +63,7 @@ class _SignUpPageState extends State<SignUpPage> {
 
   Future<void> _onGoogleSignUpPressed(AuthController controller) async {
     setState(() => _isGoogleLoading = true);
-    await controller.signInWithGoogle();
+    await controller.signInWith(_strategies.google());
     if (!mounted) return;
     setState(() => _isGoogleLoading = false);
     _handleAuthFailure(controller);
@@ -68,7 +71,7 @@ class _SignUpPageState extends State<SignUpPage> {
 
   Future<void> _onAppleSignUpPressed(AuthController controller) async {
     setState(() => _isAppleLoading = true);
-    await controller.signInWithApple();
+    await controller.signInWith(_strategies.apple());
     if (!mounted) return;
     setState(() => _isAppleLoading = false);
     _handleAuthFailure(controller);

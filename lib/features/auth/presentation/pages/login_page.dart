@@ -7,6 +7,7 @@ import '../../../../theme/app_colors.dart';
 import '../../../../theme/app_theme.dart';
 import '../../../../theme/app_typography.dart';
 import '../../domain/value_objects/email.dart';
+import '../auth_strategy_factory.dart';
 import '../controllers/auth_controller.dart';
 import '../states/auth_state.dart';
 import '../widgets/social_auth_widgets.dart';
@@ -27,6 +28,8 @@ class _LoginPageState extends State<LoginPage> {
   bool _isGoogleLoading = false;
   bool _isAppleLoading = false;
 
+  AuthStrategyFactory get _strategies => context.read<AuthStrategyFactory>();
+
   @override
   void dispose() {
     _emailController.dispose();
@@ -37,9 +40,11 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _onLoginPressed(AuthController controller) async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
-    await controller.signIn(
-      email: _emailController.text,
-      password: _passwordController.text,
+    await controller.signInWith(
+      _strategies.emailPassword(
+        _emailController.text,
+        _passwordController.text,
+      ),
     );
 
     if (!mounted) return;
@@ -48,7 +53,7 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void> _onGoogleLoginPressed(AuthController controller) async {
     setState(() => _isGoogleLoading = true);
-    await controller.signInWithGoogle();
+    await controller.signInWith(_strategies.google());
     if (!mounted) return;
     setState(() => _isGoogleLoading = false);
     _handleAuthFailure(controller);
@@ -56,7 +61,7 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void> _onAppleLoginPressed(AuthController controller) async {
     setState(() => _isAppleLoading = true);
-    await controller.signInWithApple();
+    await controller.signInWith(_strategies.apple());
     if (!mounted) return;
     setState(() => _isAppleLoading = false);
     _handleAuthFailure(controller);

@@ -1,3 +1,4 @@
+import 'package:arenahub/features/auth/presentation/auth_strategy_factory.dart';
 import 'package:arenahub/core/failure.dart';
 import 'package:arenahub/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:arenahub/features/auth/presentation/pages/login_page.dart';
@@ -10,10 +11,19 @@ import 'package:provider/provider.dart';
 import '../../../support/fakes.dart';
 
 void main() {
-  Future<void> pumpLogin(WidgetTester tester, AuthController controller) =>
+  Future<void> pumpLogin(
+    WidgetTester tester,
+    AuthController controller, [
+    AuthStrategyFactory? strategies,
+  ]) =>
       tester.pumpWidget(
-        ChangeNotifierProvider<AuthController>.value(
-          value: controller,
+        MultiProvider(
+          providers: [
+            ChangeNotifierProvider<AuthController>.value(value: controller),
+            Provider<AuthStrategyFactory>.value(
+              value: strategies ?? strategiesWith(),
+            ),
+          ],
           child: MaterialApp(
             theme: AppTheme.light,
             home: const LoginPage(),
@@ -24,7 +34,8 @@ void main() {
   group('LoginPage — Componentes de Login Social', () {
     testWidgets('exibe divisor e botões sociais do Google e Apple', (tester) async {
       final controller = controllerWith();
-      await pumpLogin(tester, controller);
+      final controllerStrategies = strategiesWith();
+      await pumpLogin(tester, controller, controllerStrategies);
 
       expect(find.byType(SocialAuthDivider), findsOneWidget);
       expect(find.text('ou continue com'), findsOneWidget);
@@ -38,7 +49,8 @@ void main() {
         (tester) async {
       final repository = FakeAuthRepository();
       final controller = controllerWith(repository: repository);
-      await pumpLogin(tester, controller);
+      final controllerStrategies = strategiesWith(repository: repository);
+      await pumpLogin(tester, controller, controllerStrategies);
 
       final googleButton = find.byType(GoogleSignInButton);
       await tester.ensureVisible(googleButton);
@@ -53,7 +65,8 @@ void main() {
         (tester) async {
       final repository = FakeAuthRepository();
       final controller = controllerWith(repository: repository);
-      await pumpLogin(tester, controller);
+      final controllerStrategies = strategiesWith(repository: repository);
+      await pumpLogin(tester, controller, controllerStrategies);
 
       final appleButton = find.byType(AppleSignInButton);
       await tester.ensureVisible(appleButton);
@@ -70,7 +83,8 @@ void main() {
         failure: const OAuthAccountCollisionFailure(),
       );
       final controller = controllerWith(repository: repository);
-      await pumpLogin(tester, controller);
+      final controllerStrategies = strategiesWith(repository: repository);
+      await pumpLogin(tester, controller, controllerStrategies);
 
       final googleButton = find.byType(GoogleSignInButton);
       await tester.ensureVisible(googleButton);
@@ -89,7 +103,8 @@ void main() {
         failure: const OAuthCancelledFailure(),
       );
       final controller = controllerWith(repository: repository);
-      await pumpLogin(tester, controller);
+      final controllerStrategies = strategiesWith(repository: repository);
+      await pumpLogin(tester, controller, controllerStrategies);
 
       final googleButton = find.byType(GoogleSignInButton);
       await tester.ensureVisible(googleButton);
