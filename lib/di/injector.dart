@@ -21,6 +21,7 @@ import '../features/auth/domain/usecases/sign_in_with_apple.dart';
 import '../features/auth/domain/usecases/sign_in_with_google.dart';
 import '../features/auth/domain/usecases/sign_out.dart';
 import '../features/auth/domain/usecases/sign_up.dart';
+import '../features/auth/presentation/auth_strategy_factory.dart';
 import '../features/auth/presentation/controllers/auth_controller.dart';
 import '../features/courts/data/repositories/firestore_booking_repository.dart';
 import '../features/courts/data/repositories/firestore_court_repository.dart';
@@ -54,6 +55,7 @@ import 'auth_mode.dart';
 class Injector {
   const Injector._(
     this.authController,
+    this.authStrategies,
     this.courtsController,
     this.bookingController,
     this.myBookingsController,
@@ -63,6 +65,7 @@ class Injector {
   );
 
   final AuthController authController;
+  final AuthStrategyFactory authStrategies;
   final CourtsController courtsController;
   final BookingController bookingController;
   final MyBookingsController myBookingsController;
@@ -88,10 +91,12 @@ class Injector {
         await _buildAuthRepository(mode, userDataSource: userDataSource);
 
     final controller = AuthController(
-      SignIn(authRepository, sessionStorage),
       SignUp(authRepository, sessionStorage),
       SignOut(sessionStorage),
       GetCurrentSession(sessionStorage),
+    );
+    final authStrategies = AuthStrategyFactory(
+      signIn: SignIn(authRepository, sessionStorage),
       signInWithGoogle: SignInWithGoogle(authRepository, sessionStorage),
       signInWithApple: SignInWithApple(authRepository, sessionStorage),
     );
@@ -119,6 +124,7 @@ class Injector {
 
     return Injector._(
       controller,
+      authStrategies,
       courtsController,
       BookingController(
         GetCourtAvailability(bookings),

@@ -14,6 +14,7 @@ import 'package:arenahub/features/auth/domain/usecases/sign_out.dart';
 import 'package:arenahub/features/auth/domain/usecases/sign_up.dart';
 import 'package:arenahub/features/auth/domain/value_objects/email.dart';
 import 'package:arenahub/features/auth/domain/value_objects/password.dart';
+import 'package:arenahub/features/auth/presentation/auth_strategy_factory.dart';
 import 'package:arenahub/features/auth/presentation/controllers/auth_controller.dart';
 
 /// Dublê de [AuthRepository].
@@ -135,10 +136,22 @@ AuthController controllerWith({
   final store = storage ?? InMemorySessionStorage();
 
   return AuthController(
-    SignIn(repo, store),
     SignUp(repo, store),
     SignOut(store),
     GetCurrentSession(store),
+  );
+}
+
+/// Monta a [AuthStrategyFactory] sobre os mesmos dublês do controller.
+AuthStrategyFactory strategiesWith({
+  AuthRepository? repository,
+  SessionStorage? storage,
+}) {
+  final repo = repository ?? FakeAuthRepository();
+  final store = storage ?? InMemorySessionStorage();
+
+  return AuthStrategyFactory(
+    signIn: SignIn(repo, store),
     signInWithGoogle: SignInWithGoogle(repo, store),
     signInWithApple: SignInWithApple(repo, store),
   );

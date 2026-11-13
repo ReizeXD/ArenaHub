@@ -1,3 +1,4 @@
+import 'package:arenahub/features/auth/presentation/auth_strategy_factory.dart';
 import 'package:arenahub/core/failure.dart';
 import 'package:arenahub/features/auth/domain/entities/role.dart';
 import 'package:arenahub/features/auth/presentation/controllers/auth_controller.dart';
@@ -10,10 +11,19 @@ import 'package:provider/provider.dart';
 import '../../../../test/support/fakes.dart';
 
 void main() {
-  Future<void> pumpSignUp(WidgetTester tester, AuthController controller) =>
+  Future<void> pumpSignUp(
+    WidgetTester tester,
+    AuthController controller, [
+    AuthStrategyFactory? strategies,
+  ]) =>
       tester.pumpWidget(
-        ChangeNotifierProvider<AuthController>.value(
-          value: controller,
+        MultiProvider(
+          providers: [
+            ChangeNotifierProvider<AuthController>.value(value: controller),
+            Provider<AuthStrategyFactory>.value(
+              value: strategies ?? strategiesWith(),
+            ),
+          ],
           child: const MaterialApp(home: SignUpPage()),
         ),
       );
@@ -28,7 +38,11 @@ void main() {
 
   testWidgets('mostra os campos de entrada, botão e link de login',
       (tester) async {
-    await pumpSignUp(tester, controllerWith());
+    await pumpSignUp(
+      tester,
+      controllerWith(),
+      strategiesWith(),
+    );
 
     expect(find.text('Criar conta'), findsOneWidget);
     expect(find.text('Junte-se à comunidade do ArenaHub'), findsOneWidget);
@@ -50,7 +64,11 @@ void main() {
   testWidgets('recusa nome incompleto sem chamar o caso de uso',
       (tester) async {
     final repository = FakeAuthRepository();
-    await pumpSignUp(tester, controllerWith(repository: repository));
+    await pumpSignUp(
+      tester,
+      controllerWith(repository: repository),
+      strategiesWith(repository: repository),
+    );
 
     await tester.enterText(findField(0), 'Carlos');
     await tester.enterText(findField(1), 'carlos@arenahub.com');
@@ -66,7 +84,11 @@ void main() {
   testWidgets('recusa e-mail inválido sem chamar o caso de uso',
       (tester) async {
     final repository = FakeAuthRepository();
-    await pumpSignUp(tester, controllerWith(repository: repository));
+    await pumpSignUp(
+      tester,
+      controllerWith(repository: repository),
+      strategiesWith(repository: repository),
+    );
 
     await tester.enterText(findField(0), 'Carlos Silva');
     await tester.enterText(findField(1), 'carlos@');
@@ -82,7 +104,11 @@ void main() {
   testWidgets('recusa senha fraca sem chamar o caso de uso',
       (tester) async {
     final repository = FakeAuthRepository();
-    await pumpSignUp(tester, controllerWith(repository: repository));
+    await pumpSignUp(
+      tester,
+      controllerWith(repository: repository),
+      strategiesWith(repository: repository),
+    );
 
     await tester.enterText(findField(0), 'Carlos Silva');
     await tester.enterText(findField(1), 'carlos@arenahub.com');
@@ -101,7 +127,11 @@ void main() {
   testWidgets('recusa confirmação quando as senhas não coincidem',
       (tester) async {
     final repository = FakeAuthRepository();
-    await pumpSignUp(tester, controllerWith(repository: repository));
+    await pumpSignUp(
+      tester,
+      controllerWith(repository: repository),
+      strategiesWith(repository: repository),
+    );
 
     await tester.enterText(findField(0), 'Carlos Silva');
     await tester.enterText(findField(1), 'carlos@arenahub.com');
@@ -118,7 +148,8 @@ void main() {
       (tester) async {
     final repository = FakeAuthRepository();
     final controller = controllerWith(repository: repository);
-    await pumpSignUp(tester, controller);
+    final controllerStrategies = strategiesWith(repository: repository);
+    await pumpSignUp(tester, controller, controllerStrategies);
 
     await tester.enterText(findField(0), 'Carlos Silva');
     await tester.enterText(findField(1), 'carlos@arenahub.com');
@@ -139,7 +170,8 @@ void main() {
       failure: const EmailAlreadyInUseFailure(),
     );
     final controller = controllerWith(repository: repository);
-    await pumpSignUp(tester, controller);
+    final controllerStrategies = strategiesWith(repository: repository);
+    await pumpSignUp(tester, controller, controllerStrategies);
 
     await tester.enterText(findField(0), 'Carlos Silva');
     await tester.enterText(findField(1), 'carlos@arenahub.com');
@@ -153,7 +185,11 @@ void main() {
 
   testWidgets('alterna visibilidade da senha ao clicar no ícone',
       (tester) async {
-    await pumpSignUp(tester, controllerWith());
+    await pumpSignUp(
+      tester,
+      controllerWith(),
+      strategiesWith(),
+    );
 
     final passwordField = tester.widget<EditableText>(
       find.descendant(
@@ -179,7 +215,8 @@ void main() {
     testWidgets('cadastro com Google autentica e cria sessão', (tester) async {
       final repository = FakeAuthRepository();
       final controller = controllerWith(repository: repository);
-      await pumpSignUp(tester, controller);
+      final controllerStrategies = strategiesWith(repository: repository);
+      await pumpSignUp(tester, controller, controllerStrategies);
 
       final googleButton = find.byType(GoogleSignInButton);
       await tester.ensureVisible(googleButton);
@@ -193,7 +230,8 @@ void main() {
     testWidgets('cadastro com Apple autentica e cria sessão', (tester) async {
       final repository = FakeAuthRepository();
       final controller = controllerWith(repository: repository);
-      await pumpSignUp(tester, controller);
+      final controllerStrategies = strategiesWith(repository: repository);
+      await pumpSignUp(tester, controller, controllerStrategies);
 
       final appleButton = find.byType(AppleSignInButton);
       await tester.ensureVisible(appleButton);
@@ -210,7 +248,8 @@ void main() {
         failure: const OAuthNetworkFailure(),
       );
       final controller = controllerWith(repository: repository);
-      await pumpSignUp(tester, controller);
+      final controllerStrategies = strategiesWith(repository: repository);
+      await pumpSignUp(tester, controller, controllerStrategies);
 
       final googleButton = find.byType(GoogleSignInButton);
       await tester.ensureVisible(googleButton);
