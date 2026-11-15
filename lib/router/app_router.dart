@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import '../features/auth/presentation/controllers/auth_controller.dart';
 import '../features/auth/presentation/pages/login_page.dart';
 import '../features/auth/presentation/pages/sign_up_page.dart';
-import '../features/auth/presentation/states/auth_state.dart';
 import '../features/courts/domain/entities/court.dart';
 import '../features/courts/presentation/controllers/courts_controller.dart';
 import '../features/courts/presentation/controllers/my_courts_controller.dart';
@@ -17,6 +16,10 @@ import '../features/courts/presentation/pages/my_courts_page.dart';
 import '../features/courts/presentation/pages/owner_court_agenda_page.dart';
 import '../features/courts/presentation/states/courts_state.dart';
 import '../features/profile/presentation/pages/profile_page.dart';
+import 'redirection/authenticated_entry_handler.dart';
+import 'redirection/redirection_middleware.dart';
+import 'redirection/session_checking_handler.dart';
+import 'redirection/unauthenticated_handler.dart';
 
 abstract final class AppRoutes {
   static const splash = '/splash';
@@ -41,6 +44,12 @@ GoRouter buildAppRouter({
 }) {
   final rootKey = GlobalKey<NavigatorState>();
 
+  final middleware = RedirectionMiddleware([
+    SessionCheckingHandler(auth),
+    UnauthenticatedHandler(auth),
+    const AuthenticatedEntryHandler(),
+  ]);
+
   Court? courtFor(GoRouterState state) {
     if (state.extra case final Court court) return court;
     final id = state.pathParameters['courtId'];
@@ -63,24 +72,7 @@ GoRouter buildAppRouter({
     navigatorKey: rootKey,
     initialLocation: initialLocation,
     refreshListenable: auth,
-    redirect: (context, state) {
-      final location = state.matchedLocation;
-
-      if (auth.state is AuthChecking) {
-        return location == AppRoutes.splash ? null : AppRoutes.splash;
-      }
-      if (auth.state is! Authenticated) {
-        final isAuthRoute =
-            location == AppRoutes.login || location == AppRoutes.signUp;
-        return isAuthRoute ? null : AppRoutes.login;
-      }
-      if (location == AppRoutes.login ||
-          location == AppRoutes.signUp ||
-          location == AppRoutes.splash) {
-        return AppRoutes.courts;
-      }
-      return null;
-    },
+    redirect: (_, state) => middleware.handle(state.matchedLocation),
     routes: [
       GoRoute(
         path: AppRoutes.splash,
