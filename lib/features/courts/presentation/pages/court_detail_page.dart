@@ -22,11 +22,11 @@ enum _Period {
   final String label;
   final IconData icon;
 
-  static _Period of(int hour) => switch (hour) {
-        < 12 => _Period.morning,
-        < 18 => _Period.afternoon,
-        _ => _Period.night,
-      };
+  static _Period of(int hour) {
+    if (hour < 12) return _Period.morning;
+    if (hour < 18) return _Period.afternoon;
+    return _Period.night;
+  }
 }
 
 /// Detalhe da quadra: dados, agenda do dia escolhido e a reserva.
@@ -160,43 +160,48 @@ class _CourtDetailPageState extends State<CourtDetailPage> {
                   },
                 ),
                 const SizedBox(height: AppSpacing.lg),
-                switch (controller.state) {
-                  AgendaLoading() => const Padding(
-                      padding: EdgeInsets.symmetric(vertical: AppSpacing.xl),
-                      child: Center(child: CircularProgressIndicator()),
-                    ),
-                  AgendaFailed(:final failure) => Padding(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: AppSpacing.lg,
-                      ),
-                      child: Text(failure.message, style: AppText.bodyMd),
-                    ),
-                  AgendaLoaded(:final slots)
-                      when !slots.any((s) => s.isAvailable) =>
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: AppSpacing.lg,
-                      ),
-                      child: Text(
-                        'Nenhum horário livre neste dia. Tente outro.',
-                        style: AppText.bodyMd.copyWith(
-                          color: AppColors.onSurfaceVariant,
-                        ),
-                      ),
-                    ),
-                  AgendaLoaded(:final slots) => _Agenda(
-                      slots: slots,
-                      court: court,
-                      selected: _selected,
-                      onSelect: (slot) => setState(() => _selected = slot),
-                    ),
-                },
+                _buildAgendaSection(controller, court),
               ],
             ),
           ),
         ),
       ),
     );
+  }
+
+  Widget _buildAgendaSection(BookingController controller, Court court) {
+    final state = controller.state;
+    if (state is AgendaLoading) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: AppSpacing.xl),
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+    if (state is AgendaFailed) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
+        child: Text(state.failure.message, style: AppText.bodyMd),
+      );
+    }
+    if (state is AgendaLoaded) {
+      final hasAvailable = state.slots.any((s) => s.isAvailable);
+      if (!hasAvailable) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
+          child: Text(
+            'Nenhum horário livre neste dia. Tente outro.',
+            style: AppText.bodyMd.copyWith(color: AppColors.onSurfaceVariant),
+          ),
+        );
+      }
+      return _Agenda(
+        slots: state.slots,
+        court: court,
+        selected: _selected,
+        onSelect: (slot) => setState(() => _selected = slot),
+      );
+    }
+    return const SizedBox.shrink();
   }
 }
 

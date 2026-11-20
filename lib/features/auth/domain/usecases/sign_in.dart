@@ -17,15 +17,18 @@ class SignIn {
     required String password,
   }) async {
     final emailResult = Email.create(email);
-    if (emailResult case Err<Email> error) return error.cast();
+    if (emailResult is Err<Email>) {
+      return Err(emailResult.failure);
+    }
+    final validEmail = (emailResult as Ok<Email>).value;
 
     final result = await _repository.signIn(
-      email: (emailResult as Ok<Email>).value,
+      email: validEmail,
       password: Password.unchecked(password),
     );
 
-    if (result case Ok<AuthSession> success) {
-      await _sessionStorage.save(success.value);
+    if (result is Ok<AuthSession>) {
+      await _sessionStorage.save(result.value);
     }
     return result;
   }

@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import '../../../../core/result.dart';
 import '../../domain/entities/court.dart';
 import '../../domain/entities/sport.dart';
 import '../../domain/usecases/list_courts.dart';
@@ -22,21 +23,33 @@ class CourtsController extends ChangeNotifier {
   ///
   /// Filtro em memória: a lista inteira já veio do repositório, então trocar
   /// de modalidade não gera consulta nova.
-  List<Court> get visibleCourts => switch (_state) {
-        CourtsLoaded(:final courts) => _sport == null
-            ? courts
-            : courts.where((court) => court.sport == _sport).toList(),
-        _ => const <Court>[],
-      };
+  List<Court> get visibleCourts {
+    final currentState = _state;
+    if (currentState is! CourtsLoaded) {
+      return const <Court>[];
+    }
+    if (_sport == null) {
+      return currentState.courts;
+    }
+    return currentState.courts
+        .where((court) => court.sport == _sport)
+        .toList();
+  }
 
   /// As modalidades que existem no catálogo carregado.
-  List<Sport> get availableSports => switch (_state) {
-        CourtsLoaded(:final courts) => [
-            for (final sport in Sport.values)
-              if (courts.any((court) => court.sport == sport)) sport,
-          ],
-        _ => const <Sport>[],
-      };
+  List<Sport> get availableSports {
+    final currentState = _state;
+    if (currentState is! CourtsLoaded) {
+      return const <Sport>[];
+    }
+    final result = <Sport>[];
+    for (final sport in Sport.values) {
+      if (currentState.courts.any((court) => court.sport == sport)) {
+        result.add(sport);
+      }
+    }
+    return result;
+  }
 
   void filterBy(Sport? sport) {
     if (_sport == sport) return;
@@ -46,12 +59,12 @@ class CourtsController extends ChangeNotifier {
 
   Future<void> load() async {
     _emit(const CourtsLoading());
-    _emit(
-      (await _listCourts()).fold(
-        onSuccess: (List<Court> courts) => CourtsLoaded(courts),
-        onFailure: CourtsFailed.new,
-      ),
-    );
+    final result = await _listCourts();
+    if (result is Ok<List<Court>>) {
+      _emit(CourtsLoaded(result.value));
+    } else if (result is Err<List<Court>>) {
+      _emit(CourtsFailed(result.failure));
+    }
   }
 
   void _emit(CourtsState next) {

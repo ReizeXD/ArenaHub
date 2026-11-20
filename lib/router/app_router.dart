@@ -51,21 +51,25 @@ GoRouter buildAppRouter({
   ]);
 
   Court? courtFor(GoRouterState state) {
-    if (state.extra case final Court court) return court;
+    if (state.extra is Court) {
+      return state.extra as Court;
+    }
     final id = state.pathParameters['courtId'];
     if (id == null) return null;
 
     if (myCourts != null) {
-      final ownerMatch =
-          myCourts.courts.where((court) => court.id == id).firstOrNull;
-      if (ownerMatch != null) return ownerMatch;
+      for (final court in myCourts.courts) {
+        if (court.id == id) return court;
+      }
     }
 
-    return switch (courts.state) {
-      CourtsLoaded(courts: final list) =>
-        list.where((court) => court.id == id).firstOrNull,
-      _ => null,
-    };
+    final courtsState = courts.state;
+    if (courtsState is CourtsLoaded) {
+      for (final court in courtsState.courts) {
+        if (court.id == id) return court;
+      }
+    }
+    return null;
   }
 
   return GoRouter(

@@ -19,15 +19,19 @@ class ListMyBookings {
 
   Future<Result<List<BookingWithCourt>>> call(String userId) async {
     final bookingsResult = await _bookings.ofUser(userId);
-    if (bookingsResult case Err<List<Booking>> error) return error.cast();
+    if (bookingsResult is Err<List<Booking>>) {
+      return Err(bookingsResult.failure);
+    }
 
     final courtsResult = await _courts.listAll();
-    if (courtsResult case Err<List<Court>> error) return error.cast();
+    if (courtsResult is Err<List<Court>>) {
+      return Err(courtsResult.failure);
+    }
 
-    final courtsById = <String, Court>{
-      for (final court in (courtsResult as Ok<List<Court>>).value)
-        court.id: court,
-    };
+    final courtsById = <String, Court>{};
+    for (final court in (courtsResult as Ok<List<Court>>).value) {
+      courtsById[court.id] = court;
+    }
 
     final now = _now();
     final joined = <BookingWithCourt>[];

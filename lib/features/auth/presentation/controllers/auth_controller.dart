@@ -36,16 +36,15 @@ class AuthController extends ChangeNotifier {
   Future<void> signInWith(AuthStrategy strategy) async {
     _emit(const AuthInProgress());
     final result = await strategy.authenticate();
-    result.fold(
-      onSuccess: (session) => _emit(Authenticated(session)),
-      onFailure: (failure) {
-        if (failure is OAuthCancelledFailure) {
-          _emit(const Unauthenticated());
-        } else {
-          _emit(AuthFailed(failure));
-        }
-      },
-    );
+    if (result is Ok<AuthSession>) {
+      _emit(Authenticated(result.value));
+    } else if (result is Err<AuthSession>) {
+      if (result.failure is OAuthCancelledFailure) {
+        _emit(const Unauthenticated());
+      } else {
+        _emit(AuthFailed(result.failure));
+      }
+    }
   }
 
   Future<void> signUp({
@@ -75,12 +74,13 @@ class AuthController extends ChangeNotifier {
     if (_state is AuthFailed) _emit(const Unauthenticated());
   }
 
-  void _emitResult(Result<AuthSession> result) => _emit(
-        result.fold(
-          onSuccess: Authenticated.new,
-          onFailure: AuthFailed.new,
-        ),
-      );
+  void _emitResult(Result<AuthSession> result) {
+    if (result is Ok<AuthSession>) {
+      _emit(Authenticated(result.value));
+    } else if (result is Err<AuthSession>) {
+      _emit(AuthFailed(result.failure));
+    }
+  }
 
   void _emit(AuthState next) {
     _state = next;

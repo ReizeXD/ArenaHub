@@ -48,34 +48,39 @@ class OwnerAgendaController extends ChangeNotifier {
   }
 
   /// Lista de slots do estado atual (vazia se carregando ou com falha).
-  List<OwnerSlotInfo> get slots => switch (_state) {
-        OwnerAgendaLoaded(:final slots) => slots,
-        _ => const [],
-      };
+  List<OwnerSlotInfo> get slots {
+    final currentState = _state;
+    if (currentState is OwnerAgendaLoaded) return currentState.slots;
+    return const [];
+  }
 
   /// Total de slots agendados no dia atual.
-  int get bookedCount => switch (_state) {
-        OwnerAgendaLoaded(:final bookedCount) => bookedCount,
-        _ => 0,
-      };
+  int get bookedCount {
+    final currentState = _state;
+    if (currentState is OwnerAgendaLoaded) return currentState.bookedCount;
+    return 0;
+  }
 
   /// Total de slots disponíveis na grade do dia.
-  int get totalSlots => switch (_state) {
-        OwnerAgendaLoaded(:final totalSlots) => totalSlots,
-        _ => 0,
-      };
+  int get totalSlots {
+    final currentState = _state;
+    if (currentState is OwnerAgendaLoaded) return currentState.totalSlots;
+    return 0;
+  }
 
   /// Faturamento previsto no dia selecionado em centavos.
-  int get revenueInCents => switch (_state) {
-        OwnerAgendaLoaded(:final revenueInCents) => revenueInCents,
-        _ => 0,
-      };
+  int get revenueInCents {
+    final currentState = _state;
+    if (currentState is OwnerAgendaLoaded) return currentState.revenueInCents;
+    return 0;
+  }
 
   /// Faturamento previsto formatado em R$.
-  String get formattedRevenue => switch (_state) {
-        OwnerAgendaLoaded(:final formattedRevenue) => formattedRevenue,
-        _ => 'R\$ 0,00',
-      };
+  String get formattedRevenue {
+    final currentState = _state;
+    if (currentState is OwnerAgendaLoaded) return currentState.formattedRevenue;
+    return 'R\$ 0,00';
+  }
 
   /// Inicializa e carrega a agenda para uma quadra em uma data específica.
   Future<void> load({
@@ -116,16 +121,15 @@ class OwnerAgendaController extends ChangeNotifier {
       userId: _userId,
     );
 
-    switch (result) {
-      case Ok(:final value):
-        _state = OwnerAgendaLoaded(
-          court: currentCourt,
-          selectedDay: _selectedDay,
-          availableDays: availableDays,
-          slots: value,
-        );
-      case Err(:final failure):
-        _state = OwnerAgendaFailed(failure);
+    if (result is Ok<List<OwnerSlotInfo>>) {
+      _state = OwnerAgendaLoaded(
+        court: currentCourt,
+        selectedDay: _selectedDay,
+        availableDays: availableDays,
+        slots: result.value,
+      );
+    } else if (result is Err<List<OwnerSlotInfo>>) {
+      _state = OwnerAgendaFailed(result.failure);
     }
 
     notifyListeners();
