@@ -12,8 +12,8 @@ class SignInWithApple {
 
   Future<Result<AuthSession>> call() async {
     final result = await _repository.signInWithApple();
-    if (result case Ok<AuthSession> success) {
-      await _sessionStorage?.save(success.value);
+    if (result is Ok<AuthSession>) {
+      await _sessionStorage?.save(result.value);
     }
     return result;
   }

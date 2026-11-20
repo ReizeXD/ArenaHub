@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../../../../core/failure.dart';
+import '../../../../core/result.dart';
 import '../../domain/entities/booking.dart';
 import '../../domain/entities/court.dart';
 import '../../domain/entities/time_slot.dart';
@@ -77,10 +78,10 @@ class BookingController extends ChangeNotifier {
 
     _isBooking = false;
 
-    final failure = result.fold(
-      onSuccess: (Booking _) => null,
-      onFailure: (Failure failure) => failure,
-    );
+    Failure? failure;
+    if (result is Err<Booking>) {
+      failure = result.failure;
+    }
 
     // Recarrega em qualquer caso: no sucesso para marcar o horário como
     // ocupado, no erro porque a agenda pode ter mudado por baixo.
@@ -93,12 +94,12 @@ class BookingController extends ChangeNotifier {
     if (court == null) return;
 
     _emit(const AgendaLoading());
-    _emit(
-      (await _getAvailability(court: court, day: _selectedDay)).fold(
-        onSuccess: (List<TimeSlot> slots) => AgendaLoaded(slots),
-        onFailure: AgendaFailed.new,
-      ),
-    );
+    final result = await _getAvailability(court: court, day: _selectedDay);
+    if (result is Ok<List<TimeSlot>>) {
+      _emit(AgendaLoaded(result.value));
+    } else if (result is Err<List<TimeSlot>>) {
+      _emit(AgendaFailed(result.failure));
+    }
   }
 
   DateTime _today() {

@@ -170,53 +170,53 @@ class _CourtFormPageState extends State<CourtFormPage> {
 
     setState(() => _isSubmitting = false);
 
-    switch (result) {
-      case Ok():
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: AppColors.primary,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: AppRadius.slot),
-            content: Row(
-              children: [
-                const Icon(Icons.check_circle_outline_rounded, color: Colors.white),
-                const SizedBox(width: AppSpacing.sm + 4),
-                Expanded(
-                  child: Text(
-                    _isEditing
-                        ? 'Quadra atualizada com sucesso!'
-                        : 'Quadra cadastrada com sucesso!',
-                    style: AppText.labelLg.copyWith(color: Colors.white),
-                  ),
+    if (result is Ok<Court>) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: AppColors.primary,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: AppRadius.slot),
+          content: Row(
+            children: [
+              const Icon(Icons.check_circle_outline_rounded, color: Colors.white),
+              const SizedBox(width: AppSpacing.sm + 4),
+              Expanded(
+                child: Text(
+                  _isEditing
+                      ? 'Quadra atualizada com sucesso!'
+                      : 'Quadra cadastrada com sucesso!',
+                  style: AppText.labelLg.copyWith(color: Colors.white),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        );
-        if (Navigator.of(context).canPop()) {
-          Navigator.of(context).pop(true);
-        }
-      case Err(:final failure):
-        setState(() => _isSubmitting = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: AppColors.error,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: AppRadius.slot),
-            content: Row(
-              children: [
-                const Icon(Icons.error_outline_rounded, color: Colors.white),
-                const SizedBox(width: AppSpacing.sm + 4),
-                Expanded(
-                  child: Text(
-                    failure.message,
-                    style: AppText.labelLg.copyWith(color: Colors.white),
-                  ),
+        ),
+      );
+      if (Navigator.of(context).canPop()) {
+        Navigator.of(context).pop(true);
+      }
+    } else if (result is Err<Court>) {
+      final failure = result.failure;
+      setState(() => _isSubmitting = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: AppColors.error,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: AppRadius.slot),
+          content: Row(
+            children: [
+              const Icon(Icons.error_outline_rounded, color: Colors.white),
+              const SizedBox(width: AppSpacing.sm + 4),
+              Expanded(
+                child: Text(
+                  failure.message,
+                  style: AppText.labelLg.copyWith(color: Colors.white),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        );
+        ),
+      );
     }
   }
 

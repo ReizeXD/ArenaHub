@@ -23,7 +23,9 @@ class GetOwnerCourtAgenda {
     }
 
     final result = await _bookings.forCourtOn(courtId: court.id, day: day);
-    if (result case Err<List<Booking>> error) return error.cast();
+    if (result is Err<List<Booking>>) {
+      return Err(result.failure);
+    }
 
     final taken = (result as Ok<List<Booking>>).value;
     final now = _now();

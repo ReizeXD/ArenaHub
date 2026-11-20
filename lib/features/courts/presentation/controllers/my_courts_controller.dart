@@ -37,10 +37,13 @@ class MyCourtsController extends ChangeNotifier {
   String? get currentOwnerId => _currentOwnerId;
 
   /// Retorna as quadras carregadas quando o estado for [MyCourtsLoaded], ou lista vazia.
-  List<Court> get courts => switch (_state) {
-        MyCourtsLoaded(:final courts) => courts,
-        _ => const <Court>[],
-      };
+  List<Court> get courts {
+    final currentState = _state;
+    if (currentState is MyCourtsLoaded) {
+      return currentState.courts;
+    }
+    return const <Court>[];
+  }
 
   /// Carrega as quadras pertencentes ao [ownerId].
   Future<void> load(String ownerId) async {
@@ -48,12 +51,11 @@ class MyCourtsController extends ChangeNotifier {
     _emit(const MyCourtsLoading());
 
     final result = await listMyCourts(ownerId);
-    _emit(
-      result.fold(
-        onSuccess: (courts) => MyCourtsLoaded(courts),
-        onFailure: (failure) => MyCourtsFailed(failure),
-      ),
-    );
+    if (result is Ok<List<Court>>) {
+      _emit(MyCourtsLoaded(result.value));
+    } else if (result is Err<List<Court>>) {
+      _emit(MyCourtsFailed(result.failure));
+    }
   }
 
   /// Cadastra uma nova quadra para o proprietário.

@@ -39,44 +39,55 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
     return Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 720),
-        child: switch (state) {
-          MyBookingsLoading() => const Center(child: CircularProgressIndicator()),
-          MyBookingsFailed(:final failure) => _Empty(
-              icon: Icons.cloud_off_rounded,
-              message: failure.message,
-              onRetry: reload,
-            ),
-          MyBookingsLoaded(:final isEmpty) when isEmpty => const _Empty(
-              icon: Icons.event_available_outlined,
-              message: 'Você ainda não reservou nenhuma quadra.\n'
-                  'Vá em Quadras e escolha um horário.',
-            ),
-          MyBookingsLoaded(:final upcoming, :final past) => RefreshIndicator(
-              onRefresh: () async => reload(),
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.margin,
-                  AppSpacing.sm,
-                  AppSpacing.margin,
-                  AppSpacing.bottomSafeArea,
-                ),
-                children: [
-                  _Stats(upcoming: upcoming.length, past: past.length),
-                  const SizedBox(height: AppSpacing.md),
-                  _Switcher(
-                    showingPast: _showingPast,
-                    upcoming: upcoming.length,
-                    past: past.length,
-                    onChanged: (value) => setState(() => _showingPast = value),
-                  ),
-                  const SizedBox(height: AppSpacing.lg),
-                  ..._list(_showingPast ? past : upcoming),
-                ],
-              ),
-            ),
-        },
+        child: _buildBody(state),
       ),
     );
+  }
+
+  Widget _buildBody(MyBookingsState state) {
+    if (state is MyBookingsLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (state is MyBookingsFailed) {
+      return _Empty(
+        icon: Icons.cloud_off_rounded,
+        message: state.failure.message,
+        onRetry: reload,
+      );
+    }
+    if (state is MyBookingsLoaded) {
+      if (state.isEmpty) {
+        return const _Empty(
+          icon: Icons.event_available_outlined,
+          message: 'Você ainda não reservou nenhuma quadra.\n'
+              'Vá em Quadras e escolha um horário.',
+        );
+      }
+      return RefreshIndicator(
+        onRefresh: () async => reload(),
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.margin,
+            AppSpacing.sm,
+            AppSpacing.margin,
+            AppSpacing.bottomSafeArea,
+          ),
+          children: [
+            _Stats(upcoming: state.upcoming.length, past: state.past.length),
+            const SizedBox(height: AppSpacing.md),
+            _Switcher(
+              showingPast: _showingPast,
+              upcoming: state.upcoming.length,
+              past: state.past.length,
+              onChanged: (value) => setState(() => _showingPast = value),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            ..._list(_showingPast ? state.past : state.upcoming),
+          ],
+        ),
+      );
+    }
+    return const SizedBox.shrink();
   }
 
   List<Widget> _list(List<BookingWithCourt> items) {

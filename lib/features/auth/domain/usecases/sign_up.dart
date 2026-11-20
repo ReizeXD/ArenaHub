@@ -26,10 +26,14 @@ class SignUp {
     }
 
     final emailResult = Email.create(email);
-    if (emailResult case Err<Email> error) return error.cast();
+    if (emailResult is Err<Email>) {
+      return Err(emailResult.failure);
+    }
 
     final passwordResult = Password.create(password);
-    if (passwordResult case Err<Password> error) return error.cast();
+    if (passwordResult is Err<Password>) {
+      return Err(passwordResult.failure);
+    }
 
     final result = await _repository.signUp(
       SignUpData(
@@ -40,8 +44,8 @@ class SignUp {
       ),
     );
 
-    if (result case Ok<AuthSession> success) {
-      await _sessionStorage.save(success.value);
+    if (result is Ok<AuthSession>) {
+      await _sessionStorage.save(result.value);
     }
     return result;
   }

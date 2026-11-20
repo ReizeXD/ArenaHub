@@ -94,29 +94,23 @@ class _HomeShellState extends State<HomeShell> {
 
   int _calculateActiveTabIndex(AppMode mode, int branchIndex) {
     if (mode == AppMode.athlete) {
-      return switch (branchIndex) {
-        0 => 0,
-        1 => 1,
-        2 => 2,
-        _ => 0,
-      };
+      if (branchIndex == 1) return 1;
+      if (branchIndex == 2) return 2;
+      return 0;
     } else {
-      return switch (branchIndex) {
-        3 => 0,
-        2 => 1,
-        _ => 0,
-      };
+      if (branchIndex == 2) return 1;
+      return 0;
     }
   }
 
   void _onTabSelected(BuildContext context, AppMode mode, int tabIndex) {
     if (mode == AppMode.athlete) {
-      final targetBranch = switch (tabIndex) {
-        0 => 0,
-        1 => 1,
-        2 => 2,
-        _ => 0,
-      };
+      int targetBranch = 0;
+      if (tabIndex == 1) {
+        targetBranch = 1;
+      } else if (tabIndex == 2) {
+        targetBranch = 2;
+      }
       widget.navigationShell.goBranch(
         targetBranch,
         initialLocation: targetBranch == widget.navigationShell.currentIndex,
@@ -125,11 +119,7 @@ class _HomeShellState extends State<HomeShell> {
         context.read<MyBookingsController>().load(widget.session.user.id);
       }
     } else {
-      final targetBranch = switch (tabIndex) {
-        0 => 3,
-        1 => 2,
-        _ => 3,
-      };
+      final int targetBranch = tabIndex == 1 ? 2 : 3;
       widget.navigationShell.goBranch(
         targetBranch,
         initialLocation: targetBranch == widget.navigationShell.currentIndex,
