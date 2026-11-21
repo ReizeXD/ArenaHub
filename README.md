@@ -117,7 +117,6 @@ falta*).
 
 | E-mail | Senha | Papel |
 | --- | --- | --- |
-| `admin@arenahub.com` | `arena2026` | Administrador do sistema |
 | `dono@arenahub.com` | `arena2026` | Dono de arena |
 | `jogador@arenahub.com` | `arena2026` | Jogador |
 
