@@ -35,21 +35,33 @@ class _CourtsPageState extends State<CourtsPage> {
     return Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 720),
-        child: switch (controller.state) {
-          CourtsLoading() => const Center(child: CircularProgressIndicator()),
-          CourtsFailed(:final failure) => _Empty(
-              icon: Icons.cloud_off_rounded,
-              message: failure.message,
-              onRetry: () => context.read<CourtsController>().load(),
-            ),
-          CourtsLoaded(:final courts) when courts.isEmpty => const _Empty(
-              icon: Icons.sports_soccer_outlined,
-              message: 'Nenhuma quadra cadastrada ainda.',
-            ),
-          CourtsLoaded() => _Catalog(controller: controller),
-        },
+        child: _buildBody(controller),
       ),
     );
+  }
+
+  Widget _buildBody(CourtsController controller) {
+    final state = controller.state;
+    if (state is CourtsLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (state is CourtsFailed) {
+      return _Empty(
+        icon: Icons.cloud_off_rounded,
+        message: state.failure.message,
+        onRetry: () => context.read<CourtsController>().load(),
+      );
+    }
+    if (state is CourtsLoaded) {
+      if (state.courts.isEmpty) {
+        return const _Empty(
+          icon: Icons.sports_soccer_outlined,
+          message: 'Nenhuma quadra cadastrada ainda.',
+        );
+      }
+      return _Catalog(controller: controller);
+    }
+    return const SizedBox.shrink();
   }
 }
 

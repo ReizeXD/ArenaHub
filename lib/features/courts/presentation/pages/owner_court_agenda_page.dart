@@ -131,32 +131,34 @@ class _OwnerCourtAgendaPageState extends State<OwnerCourtAgendaPage> {
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 720),
-            child: switch (controller.state) {
-              OwnerAgendaLoading() => const Center(
-                  child: CircularProgressIndicator(),
-                ),
-              OwnerAgendaFailed(:final failure) => _buildError(
-                  failure.message,
-                  () => controller.reload(),
-                ),
-              OwnerAgendaLoaded(
-                :final court,
-                :final selectedDay,
-                :final availableDays,
-                :final slots,
-              ) =>
-                _buildContent(
-                  controller: controller,
-                  court: court,
-                  selectedDay: selectedDay,
-                  availableDays: availableDays,
-                  slots: slots,
-                ),
-            },
+            child: _buildBody(controller),
           ),
         ),
       ),
     );
+  }
+
+  Widget _buildBody(OwnerAgendaController controller) {
+    final state = controller.state;
+    if (state is OwnerAgendaLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (state is OwnerAgendaFailed) {
+      return _buildError(
+        state.failure.message,
+        () => controller.reload(),
+      );
+    }
+    if (state is OwnerAgendaLoaded) {
+      return _buildContent(
+        controller: controller,
+        court: state.court,
+        selectedDay: state.selectedDay,
+        availableDays: state.availableDays,
+        slots: state.slots,
+      );
+    }
+    return const SizedBox.shrink();
   }
 
   Widget _buildError(String message, VoidCallback onRetry) {

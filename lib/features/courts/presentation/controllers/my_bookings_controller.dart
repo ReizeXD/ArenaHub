@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import '../../../../core/result.dart';
 import '../../domain/entities/booking_with_court.dart';
 import '../../domain/usecases/list_my_bookings.dart';
 import '../states/my_bookings_state.dart';
@@ -15,13 +16,12 @@ class MyBookingsController extends ChangeNotifier {
 
   Future<void> load(String userId) async {
     _emit(const MyBookingsLoading());
-    _emit(
-      (await _listMyBookings(userId)).fold(
-        onSuccess: (List<BookingWithCourt> bookings) =>
-            MyBookingsLoaded(bookings),
-        onFailure: MyBookingsFailed.new,
-      ),
-    );
+    final result = await _listMyBookings(userId);
+    if (result is Ok<List<BookingWithCourt>>) {
+      _emit(MyBookingsLoaded(result.value));
+    } else if (result is Err<List<BookingWithCourt>>) {
+      _emit(MyBookingsFailed(result.failure));
+    }
   }
 
   void _emit(MyBookingsState next) {

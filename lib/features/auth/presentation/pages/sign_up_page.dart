@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/failure.dart';
+import '../../../../core/result.dart';
 import '../../../../router/app_router.dart';
 import '../../../../theme/app_colors.dart';
 import '../../../../theme/app_theme.dart';
@@ -78,7 +79,9 @@ class _SignUpPageState extends State<SignUpPage> {
   }
 
   void _handleAuthFailure(AuthController controller) {
-    if (controller.state case AuthFailed(:final failure)) {
+    final currentState = controller.state;
+    if (currentState is AuthFailed) {
+      final failure = currentState.failure;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           backgroundColor: AppColors.error,
@@ -110,16 +113,21 @@ class _SignUpPageState extends State<SignUpPage> {
     return null;
   }
 
-  String? _validateEmail(String? value) => Email.create(value ?? '').fold(
-        onSuccess: (_) => null,
-        onFailure: (failure) => failure.message,
-      );
+  String? _validateEmail(String? value) {
+    final result = Email.create(value ?? '');
+    if (result is Err<Email>) {
+      return result.failure.message;
+    }
+    return null;
+  }
 
-  String? _validatePassword(String? value) =>
-      Password.create(value ?? '').fold(
-        onSuccess: (_) => null,
-        onFailure: (failure) => failure.message,
-      );
+  String? _validatePassword(String? value) {
+    final result = Password.create(value ?? '');
+    if (result is Err<Password>) {
+      return result.failure.message;
+    }
+    return null;
+  }
 
   String? _validateConfirmPassword(String? value) {
     if (value == null || value.isEmpty) {

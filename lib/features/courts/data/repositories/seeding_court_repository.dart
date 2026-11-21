@@ -25,28 +25,33 @@ class SeedingCourtRepository implements CourtRepository {
   Future<Result<List<Court>>> listAll() async {
     final result = await _inner.listAll();
 
-    if (result case Ok<List<Court>>(value: final courts) when courts.isEmpty) {
-      final seeded = await _seed();
-      if (seeded case Err<void> error) return error.cast();
-
-      return _inner.listAll();
-    }
-    if (result case Ok<List<Court>>(value: final courts)) {
+    if (result is Ok<List<Court>>) {
+      final courts = result.value;
+      if (courts.isEmpty) {
+        final seeded = await _seed();
+        if (seeded is Err<void>) {
+          return Err(seeded.failure);
+        }
+        return _inner.listAll();
+      }
       return Ok(await _backfillImages(courts));
     }
     return result;
   }
 
   Future<List<Court>> _backfillImages(List<Court> courts) async {
-    final catalogImages = {
-      for (final court in _catalog)
-        if (court.imageUrl.isNotEmpty) court.id: court.imageUrl,
-    };
+    final catalogImages = <String, String>{};
+    for (final court in _catalog) {
+      if (court.imageUrl.isNotEmpty) {
+        catalogImages[court.id] = court.imageUrl;
+      }
+    }
 
-    return [
-      for (final court in courts)
-        await _withCatalogImage(court, catalogImages[court.id]),
-    ];
+    final updatedCourts = <Court>[];
+    for (final court in courts) {
+      updatedCourts.add(await _withCatalogImage(court, catalogImages[court.id]));
+    }
+    return updatedCourts;
   }
 
   Future<Court> _withCatalogImage(Court court, String? catalogImage) async {

@@ -111,50 +111,50 @@ class _MyCourtsPageState extends State<MyCourtsPage> {
 
     if (!mounted) return;
 
-    switch (result) {
-      case Ok():
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: AppColors.primary,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: AppRadius.slot),
-            content: Row(
-              children: [
-                const Icon(
-                  Icons.check_circle_outline_rounded,
-                  color: Colors.white,
+    if (result is Ok<void>) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: AppColors.primary,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: AppRadius.slot),
+          content: Row(
+            children: [
+              const Icon(
+                Icons.check_circle_outline_rounded,
+                color: Colors.white,
+              ),
+              const SizedBox(width: AppSpacing.sm + 4),
+              Expanded(
+                child: Text(
+                  'Quadra "${court.name}" excluída com sucesso.',
+                  style: AppText.labelLg.copyWith(color: Colors.white),
                 ),
-                const SizedBox(width: AppSpacing.sm + 4),
-                Expanded(
-                  child: Text(
-                    'Quadra "${court.name}" excluída com sucesso.',
-                    style: AppText.labelLg.copyWith(color: Colors.white),
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-        );
-      case Err(:final failure):
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: AppColors.error,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: AppRadius.slot),
-            content: Row(
-              children: [
-                const Icon(Icons.error_outline_rounded, color: Colors.white),
-                const SizedBox(width: AppSpacing.sm + 4),
-                Expanded(
-                  child: Text(
-                    failure.message,
-                    style: AppText.labelLg.copyWith(color: Colors.white),
-                  ),
+        ),
+      );
+    } else if (result is Err<void>) {
+      final failure = result.failure;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: AppColors.error,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: AppRadius.slot),
+          content: Row(
+            children: [
+              const Icon(Icons.error_outline_rounded, color: Colors.white),
+              const SizedBox(width: AppSpacing.sm + 4),
+              Expanded(
+                child: Text(
+                  failure.message,
+                  style: AppText.labelLg.copyWith(color: Colors.white),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        );
+        ),
+      );
     }
   }
 
@@ -185,81 +185,88 @@ class _MyCourtsPageState extends State<MyCourtsPage> {
   }
 
   Widget _buildBody(BuildContext context, MyCourtsController controller) {
-    return switch (controller.state) {
-      MyCourtsLoading() => const Center(
-          child: CircularProgressIndicator(),
-        ),
-      MyCourtsFailed(:final failure) => _ErrorView(
-          message: failure.message,
-          onRetry: () => controller.load(widget.ownerId),
-        ),
-      MyCourtsLoaded(:final courts) when courts.isEmpty => _EmptyView(
+    final state = controller.state;
+    if (state is MyCourtsLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (state is MyCourtsFailed) {
+      return _ErrorView(
+        message: state.failure.message,
+        onRetry: () => controller.load(widget.ownerId),
+      );
+    }
+    if (state is MyCourtsLoaded) {
+      final courts = state.courts;
+      if (courts.isEmpty) {
+        return _EmptyView(
           onAddCourt: () => _openAddCourt(controller),
-        ),
-      MyCourtsLoaded(:final courts) => RefreshIndicator(
-          onRefresh: () => controller.load(widget.ownerId),
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.margin,
-              AppSpacing.md,
-              AppSpacing.margin,
-              AppSpacing.bottomSafeArea,
-            ),
-            children: [
-              // Barra superior com contagem e botão de adição
-              Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Minhas Quadras', style: AppText.headlineMd),
-                        const SizedBox(height: 2),
-                        Text(
-                          courts.length == 1
-                              ? '1 quadra gerenciada'
-                              : '${courts.length} quadras gerenciadas',
-                          style: AppText.bodySm.copyWith(
-                            color: AppColors.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  FilledButton.icon(
-                    key: const Key('add_court_button'),
-                    icon: const Icon(Icons.add_rounded, size: 20),
-                    label: const Text('Nova Quadra'),
-                    style: FilledButton.styleFrom(
-                      minimumSize: const Size(0, 44),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.md,
-                        vertical: AppSpacing.sm + 2,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: AppRadius.slot,
-                      ),
-                    ),
-                    onPressed: () => _openAddCourt(controller),
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.lg),
-
-              // Lista de cards das quadras
-              for (final court in courts) ...[
-                OwnerCourtCard(
-                  court: court,
-                  onViewAgenda: () => _openCourtAgenda(court),
-                  onEdit: () => _openEditCourt(controller, court),
-                  onDelete: () => _confirmAndDeleteCourt(controller, court),
-                ),
-                const SizedBox(height: AppSpacing.md),
-              ],
-            ],
+        );
+      }
+      return RefreshIndicator(
+        onRefresh: () => controller.load(widget.ownerId),
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.margin,
+            AppSpacing.md,
+            AppSpacing.margin,
+            AppSpacing.bottomSafeArea,
           ),
+          children: [
+            // Barra superior com contagem e botão de adição
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Minhas Quadras', style: AppText.headlineMd),
+                      const SizedBox(height: 2),
+                      Text(
+                        courts.length == 1
+                            ? '1 quadra gerenciada'
+                            : '${courts.length} quadras gerenciadas',
+                        style: AppText.bodySm.copyWith(
+                          color: AppColors.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                FilledButton.icon(
+                  key: const Key('add_court_button'),
+                  icon: const Icon(Icons.add_rounded, size: 20),
+                  label: const Text('Nova Quadra'),
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size(0, 44),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md,
+                      vertical: AppSpacing.sm + 2,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: AppRadius.slot,
+                    ),
+                  ),
+                  onPressed: () => _openAddCourt(controller),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.lg),
+
+            // Lista de cards das quadras
+            for (final court in courts) ...[
+              OwnerCourtCard(
+                court: court,
+                onViewAgenda: () => _openCourtAgenda(court),
+                onEdit: () => _openEditCourt(controller, court),
+                onDelete: () => _confirmAndDeleteCourt(controller, court),
+              ),
+              const SizedBox(height: AppSpacing.md),
+            ],
+          ],
         ),
-    };
+      );
+    }
+    return const SizedBox.shrink();
   }
 }
 

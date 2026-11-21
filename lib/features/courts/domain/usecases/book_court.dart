@@ -28,7 +28,9 @@ class BookCourt {
     // Reconfere contra a agenda: entre a tela carregar e o toque no botão,
     // outra pessoa pode ter reservado o mesmo horário.
     final existing = await _bookings.forCourtOn(courtId: court.id, day: start);
-    if (existing case Err<List<Booking>> error) return error.cast();
+    if (existing is Err<List<Booking>>) {
+      return Err(existing.failure);
+    }
 
     final taken = (existing as Ok<List<Booking>>).value;
     if (taken.any((booking) => booking.startsAt(start))) {
